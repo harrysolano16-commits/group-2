@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>StudySync — Personal Study Dashboard</title>
+  <link rel="stylesheet" href="cssngjava.css">
+  <script src="scriptngjava.js" defer></script>
+  <meta name="description" content="StudySync: students go to when it comes to studying." />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#home">
+          <img src="logo.png" alt="StudySync Logo">
+        </a>
+      </div>
+
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#todo">To-Do</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- SECTIONS -->
+  <section id="home">
+    <div class="container">
+      <header>
+        <h1>Easy & Practical Student Website Idea: <strong>"StudySync"</strong></h1>
+        <p class="lead">A single-page personal study dashboard to help students organize their academic life — inspired by the screenshot you provided.</p>
+      </header>
+
+      <main class="hero" role="main">
+        <section class="card">
+          <h2 class="section">Overview</h2>
+          <p class="muted-text">StudySync is built as a focused, minimal dashboard that solves real student problems using simple web technologies (HTML/CSS/JavaScript). It's customizable and portfolio-worthy.</p>
+
+          <h2 class="section">Why This Works Well</h2>
+          <ul class="bullets">
+            <li><span>Practical:</span> Solves real student problems</li>
+            <li><span>Simple:</span> Basic HTML/CSS/JavaScript</li>
+            <li><span>Customizable:</span> Easy to expand with new features</li>
+            <li><span>Portfolio-worthy:</span> Demonstrates key web dev skills</li>
+          </ul>
+
+          <h2 class="section">Core Features</h2>
+          <div class="features">
+            <div class="feature">
+              <h3>To-Do List</h3>
+              <p>Track assignments, mark completed items, quick-add tasks.</p>
+            </div>
+            <div class="feature">
+              <h3>Calendar</h3>
+              <p>Simple weekly view with upcoming due dates and reminders.</p>
+            </div>
+            <div class="feature">
+              <h3>Study Timer</h3>
+              <p>Pomodoro-style timer to help manage focused study sessions.</p>
+            </div>
+            <div class="feature">
+              <h3>Notes</h3>
+              <p>Quick text notes with search and category tags.</p>
+            </div>
+          </div>
+
+          <h2 class="section">Sample To-Do</h2>
+          <ul class="todo" aria-live="polite">
+            <li>
+              <div>
+                <strong>Calderon</strong>
+                <div class="task-desc">Chapter 5 problems</div>
+              </div>
+              <div class="badge">Due: Fri</div>
+            </li>
+            <li>
+              <div>
+                <strong>Research Draft</strong>
+                <div class="task-desc">Intro & Methods</div>
+              </div>
+              <div class="badge">Due: Mon</div>
+            </li>
+            <li>
+              <div>
+                <strong>Physics Lab</strong>
+                <div class="task-desc">Prepare report</div>
+              </div>
+              <div class="badge">Due: Wed</div>
+            </li>
+          </ul>
+
+          <footer>
+            <small>Built with HTML & CSS. Add JavaScript to store tasks in localStorage and enable interactivity.</small>
+          </footer>
+        </section>
+
+        <aside class="card screenshot" aria-label="screenshot preview">
+          <img src="/mnt/data/e345bf32-0e91-4349-8308-4e5f0024fd16.jpg" alt="Screenshot preview of StudySync idea"/>
+          <div class="screenshot-content">
+            <h2>StudySync Preview</h2>
+            <p>A visual preview based on your screenshot — dark theme, clear typography, and concise sections.</p>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <h1>Features</h1>
+      <p class="section-desc">Discover all the powerful tools StudySync offers to enhance your study sessions.</p>
+      
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>Smart Task Management</h3>
+          <p>Organize assignments with due dates, priorities, and progress tracking.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Study Timer</h3>
+          <p>Pomodoro technique implementation with customizable work/break intervals.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Note Taking</h3>
+          <p>Create, categorize, and search through your study notes efficiently.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Progress Tracking</h3>
+          <p>Visualize your study patterns and completion rates over time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="todo">
+    <div class="container">
+      <h1>To-Do List</h1>
+      <p class="section-desc">Manage your tasks and assignments in one convenient location.</p>
+      
+      <div class="card">
+        <h2 class="section">Your Tasks</h2>
+        <ul class="todo" aria-live="polite">
+          <li>
+            <div>
+              <strong>Math Homework</strong>
+              <div class="task-desc">Complete exercises 1-10</div>
+            </div>
+            <div class="badge">Due: Tomorrow</div>
+          </li>
+          <li>
+            <div>
+              <strong>Literature Essay</strong>
+              <div class="task-desc">Write first draft</div>
+            </div>
+            <div class="badge">Due: Friday</div>
+          </li>
+          <li>
+            <div>
+              <strong>Science Project</strong>
+              <div class="task-desc">Research phase</div>
+            </div>
+            <div class="badge">Due: Next Week</div>
+          </li>
+        </ul>
+        
+        <div class="add-task">
+          <input type="text" placeholder="Add new task...">
+          <button>Add</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="container">
+      <h1>Contact Us</h1>
+      <p class="section-desc">Have questions or suggestions? We'd love to hear from you.</p>
+      
+      <div class="card">
+        <h2 class="section">Get In Touch</h2>
+        <form class="contact-form">
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name">
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email">
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" rows="5"></textarea>
+          </div>
+          <button type="submit">Send Message</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
