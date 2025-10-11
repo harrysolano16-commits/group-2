@@ -1,115 +1,116 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Smooth scrolling for navigation links
-  const navLinks = document.querySelectorAll(".nav-links a");
-  
-  navLinks.forEach(link => {
-    link.addEventListener("click", event => {
-      event.preventDefault();
-      const targetId = link.getAttribute("href").substring(1);
-      const targetSection = document.getElementById(targetId);
-      
-      if (targetSection) {
-        targetSection.scrollIntoView({
-          behavior: "smooth"
-        });
-      }
-    });
-  });
+// Sidebar Functionality
+const sidebar = document.getElementById('sidebar');
+const sidebarToggle = document.getElementById('sidebarToggle');
+const mainContent = document.getElementById('mainContent');
 
-  // Add task functionality
-  const addTaskButton = document.querySelector("#todo button");
-  const taskInput = document.querySelector("#todo input");
-  
-  if (addTaskButton && taskInput) {
-    addTaskButton.addEventListener("click", addTask);
-    taskInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        addTask();
-      }
-    });
-  }
+// Check if elements exist to prevent errors
+if (!sidebar || !sidebarToggle || !mainContent) {
+    console.error('Sidebar elements not found! Check your HTML IDs');
+}
 
-  function addTask() {
-    const taskText = taskInput.value.trim();
-    if (taskText === "") return;
-    
-    const todoList = document.querySelector("#todo .todo");
-    const newTask = document.createElement("li");
-    
-    newTask.innerHTML = `
-      <div>
-        <strong>${taskText}</strong>
-        <div class="task-desc">New task</div>
-      </div>
-      <div class="badge">Due: Soon</div>
-    `;
-    
-    todoList.appendChild(newTask);
-    taskInput.value = "";
-    
-    // Add animation
-    newTask.style.opacity = "0";
-    setTimeout(() => {
-      newTask.style.transition = "opacity 0.3s ease";
-      newTask.style.opacity = "1";
-    }, 10);
-  }
+// Create mobile overlay
+const overlay = document.createElement('div');
+overlay.className = 'sidebar-overlay';
+overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 998;
+    display: none;
+`;
+document.body.appendChild(overlay);
 
-  // Simple form validation for contact form
-  const contactForm = document.querySelector(".contact-form");
-  
-  if (contactForm) {
-    contactForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      
-      const name = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const message = document.getElementById("message").value.trim();
-      
-      if (name === "" || email === "" || message === "") {
-        alert("Please fill in all fields before submitting.");
-        return;
-      }
-      
-      // In a real application, you would send this data to a server
-      alert("Thank you for your message! We'll get back to you soon.");
-      contactForm.reset();
-    });
-  }
-
-  // Add active state to navigation based on scroll position
-  const sections = document.querySelectorAll("section");
-  
-  function setActiveNavLink() {
-    let current = "";
-    
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.clientHeight;
-      
-      if (scrollY >= sectionTop - 100) {
-        current = section.getAttribute("id");
-      }
-    });
-    
-    navLinks.forEach(link => {
-      link.classList.remove("active");
-      if (link.getAttribute("href").substring(1) === current) {
-        link.classList.add("active");
-      }
-    });
-  }
-  
-  // Add active state styling to CSS
-  const style = document.createElement("style");
-  style.textContent = `
-    .nav-links a.active {
-      color: var(--muted) !important;
-      border-bottom: 2px solid var(--muted);
+function toggleSidebar() {
+    if (window.innerWidth <= 768) {
+        // Mobile behavior - use active class
+        sidebar.classList.toggle('active');
+        overlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+        
+        // Prevent body scroll when sidebar is open
+        document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+    } else {
+        // Desktop behavior - use collapsed class
+        sidebar.classList.toggle('collapsed');
+        
+        // Update main content margin
+        updateMainContentMargin();
     }
-  `;
-  document.head.appendChild(style);
-  
-  // Set active nav link on scroll
-  window.addEventListener("scroll", setActiveNavLink);
+}
+
+function updateMainContentMargin() {
+    if (sidebar.classList.contains('collapsed')) {
+        mainContent.style.marginLeft = '60px';
+    } else {
+        mainContent.style.marginLeft = '240px';
+    }
+}
+
+// Sidebar toggle click
+sidebarToggle.addEventListener('click', toggleSidebar);
+
+// Close sidebar when clicking overlay
+overlay.addEventListener('click', function() {
+    sidebar.classList.remove('active');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+});
+
+// Close sidebar when clicking on a nav item (mobile)
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('active');
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+// Handle window resize
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    // Debounce resize events for better performance
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+        if (window.innerWidth > 768) {
+            // Reset for desktop
+            sidebar.classList.remove('active');
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+            
+            // Ensure proper desktop state
+            updateMainContentMargin();
+        } else {
+            // Reset for mobile
+            sidebar.classList.remove('collapsed');
+            mainContent.style.marginLeft = '0';
+        }
+    }, 100);
+});
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', function() {
+    // Set initial state based on screen size
+    if (window.innerWidth > 768) {
+        mainContent.style.marginLeft = '240px';
+    } else {
+        mainContent.style.marginLeft = '0';
+    }
+    
+    // Load saved sidebar state from localStorage (optional)
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.style.marginLeft = '60px';
+    }
+});
+
+// Save sidebar state when toggled (optional enhancement)
+sidebarToggle.addEventListener('click', function() {
+    if (window.innerWidth > 768) {
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
 });

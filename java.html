@@ -1,205 +1,203 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StudySync — Personal Study Dashboard</title>
   <link rel="stylesheet" href="cssngjava.css">
   <script src="scriptngjava.js" defer></script>
-  <meta name="description" content="StudySync: students go to when it comes to studying." />
 </head>
 <body>
-
-  <!-- NAVBARETA -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="logo">
-        <a href="#home">
-          <img src="logo.png" alt="StudySync Logo">
-        </a>
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <div class="nav-left">
+      <div class="sidebar-toggle" id="sidebarToggle">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
-
-      <ul class="nav-links">
-        <li><a href="#home">Home</a></li>
-        <li><a href="#features">Features</a></li>
-        <li><a href="#todo">To-Do</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
+      <div class="logo">
+        <img src="logo.png" alt="StudySync logo">
+      </div>  
+    </div>
+    
+    <div class="nav-center">
+      <div class="search-bar">
+        <input type="text" placeholder="Search tasks and tools...">
+      </div>
+      <button class="search_icon_mobile" id="searchmobiletoggle">🔍</button>
+    </div>
+    
+    <div class="nav-right">
+      <button class="nav-icon" id="notificationsBtn">🔔</button>
+      <button class="nav-icon" id="profileBtn">👤</button>
+      <button class="nav-icon" id="settingsBtn">⚙️</button>
     </div>
   </nav>
 
-  <!-- SECTIONS -->
-  <section id="home">
-    <div class="container">
-      <header>
-        <h1>Easy & Practical Student Website Idea: <strong>"StudySync"</strong></h1>
-        <p class="lead">A single-page personal study dashboard to help students organize their academic life — inspired by the screenshot you provided.</p>
-      </header>
-
-      <main class="hero" role="main">
-        <section class="card">
-          <h2 class="section">Overview</h2>
-          <p class="muted-text">StudySync is built as a focused, minimal dashboard that solves real student problems using simple web technologies (HTML/CSS/JavaScript). It's customizable and portfolio-worthy.</p>
-
-          <h2 class="section">Why This Works Well</h2>
-          <ul class="bullets">
-            <li><span>Practical:</span> Solves real student problems</li>
-            <li><span>Simple:</span> Basic HTML/CSS/JavaScript</li>
-            <li><span>Customizable:</span> Easy to expand with new features</li>
-            <li><span>Portfolio-worthy:</span> Demonstrates key web dev skills</li>
-          </ul>
-
-          <h2 class="section">Core Features</h2>
-          <div class="features">
-            <div class="feature">
-              <h3>To-Do List</h3>
-              <p>Track assignments, mark completed items, quick-add tasks.</p>
-            </div>
-            <div class="feature">
-              <h3>Calendar</h3>
-              <p>Simple weekly view with upcoming due dates and reminders.</p>
-            </div>
-            <div class="feature">
-              <h3>Study Timer</h3>
-              <p>Pomodoro-style timer to help manage focused study sessions.</p>
-            </div>
-            <div class="feature">
-              <h3>Notes</h3>
-              <p>Quick text notes with search and category tags.</p>
-            </div>
-          </div>
-
-          <h2 class="section">Sample To-Do</h2>
-          <ul class="todo" aria-live="polite">
-            <li>
-              <div>
-                <strong>Calderon</strong>
-                <div class="task-desc">Chapter 5 problems</div>
-              </div>
-              <div class="badge">Due: Fri</div>
-            </li>
-            <li>
-              <div>
-                <strong>Research Draft</strong>
-                <div class="task-desc">Intro & Methods</div>
-              </div>
-              <div class="badge">Due: Mon</div>
-            </li>
-            <li>
-              <div>
-                <strong>Physics Lab</strong>
-                <div class="task-desc">Prepare report</div>
-              </div>
-              <div class="badge">Due: Wed</div>
-            </li>
-          </ul>
-
-          <footer>
-            <small>Built with HTML & CSS. Add JavaScript to store tasks in localStorage and enable interactivity.</small>
-          </footer>
-        </section>
-
-        <aside class="card screenshot" aria-label="screenshot preview">
-          <img src="/mnt/data/e345bf32-0e91-4349-8308-4e5f0024fd16.jpg" alt="Screenshot preview of StudySync idea"/>
-          <div class="screenshot-content">
-            <h2>StudySync Preview</h2>
-            <p>A visual preview based on your screenshot — dark theme, clear typography, and concise sections.</p>
-          </div>
-        </aside>
-      </main>
-    </div>
-  </section>
-
-  <section id="features">
-    <div class="container">
-      <h1>Features</h1>
-      <p class="section-desc">Discover all the powerful tools StudySync offers to enhance your study sessions.</p>
-      
-      <div class="features-grid">
-        <div class="feature-card">
-          <h3>Smart Task Management</h3>
-          <p>Organize assignments with due dates, priorities, and progress tracking.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Study Timer</h3>
-          <p>Pomodoro technique implementation with customizable work/break intervals.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Note Taking</h3>
-          <p>Create, categorize, and search through your study notes efficiently.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Progress Tracking</h3>
-          <p>Visualize your study patterns and completion rates over time.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="todo">
-    <div class="container">
-      <h1>To-Do List</h1>
-      <p class="section-desc">Manage your tasks and assignments in one convenient location.</p>
-      
-      <div class="card">
-        <h2 class="section">Your Tasks</h2>
-        <ul class="todo" aria-live="polite">
-          <li>
-            <div>
-              <strong>Math Homework</strong>
-              <div class="task-desc">Complete exercises 1-10</div>
-            </div>
-            <div class="badge">Due: Tomorrow</div>
+  <!-- Collapsible Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <!-- Core Features Section -->
+      <div class="nav-section">
+        <h3>CORE FEATURES</h3>
+        <ul>
+          <li class="nav-item active" data-section="dashboard">
+            <span>🏠</span>
+            <span>Dashboard</span>
           </li>
-          <li>
-            <div>
-              <strong>Literature Essay</strong>
-              <div class="task-desc">Write first draft</div>
-            </div>
-            <div class="badge">Due: Friday</div>
+          <li class="nav-item" data-section="todo">
+            <span>📝</span>
+            <span>To-Do List</span>
           </li>
-          <li>
-            <div>
-              <strong>Science Project</strong>
-              <div class="task-desc">Research phase</div>
-            </div>
-            <div class="badge">Due: Next Week</div>
+          <li class="nav-item" data-section="timer">
+            <span>⏱️</span>
+            <span>Pomodoro Timer</span>
+          </li>
+          <li class="nav-item" data-section="links">
+            <span>🔗</span>
+            <span>Quick Links</span>
+          </li>
+          <li class="nav-item" data-section="quotes">
+            <span>💭</span>
+            <span>Motivational Quotes</span>
           </li>
         </ul>
-        
-        <div class="add-task">
-          <input type="text" placeholder="Add new task...">
-          <button>Add</button>
+      </div>
+
+      <!-- Tools Section -->
+      <div class="nav-section">
+        <h3>TOOLS</h3>
+        <ul>
+          <li class="nav-item" data-section="pdf-converter">
+            <span>📄</span>
+            <span>PDF Converter</span>
+          </li>
+          <li class="nav-item" data-section="flashcards">
+            <span>🃏</span>
+            <span>Flashcard Generator</span>
+          </li>
+          <li class="nav-item" data-section="quiz-maker">
+            <span>❓</span>
+            <span>Quiz Maker</span>
+          </li>
+          <li class="nav-item" data-section="pdf-combiner">
+            <span>🔗</span>
+            <span>PDF Combiner</span>
+          </li>
+          <li class="nav-item" data-section="pdf-summarizer">
+            <span>📊</span>
+            <span>PDF Summarizer</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Settings Section -->
+      <div class="nav-section">
+        <h3>SETTINGS</h3>
+        <ul>
+          <li class="nav-item" data-section="theme">
+            <span>🎨</span>
+            <span>Theme Settings</span>
+          </li>
+          <li class="nav-item" data-section="account">
+            <span>👤</span>
+            <span>Account</span>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+    
+    <!-- Dashboard Section (Default View) -->
+    <section class="content-section active" id="dashboard">
+      <div class="dashboard-grid">
+        <!-- Timer Card -->
+        <div class="card timer-card">
+          <h2>Pomodoro Timer</h2>
+          <div class="timer-display">
+            <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
+          </div>
+          <div class="timer-controls">
+            <button class="btn-primary" id="startTimer">Start</button>
+            <button class="btn-secondary" id="pauseTimer">Pause</button>
+            <button class="btn-secondary" id="resetTimer">Reset</button>
+          </div>
+          <div class="timer-status">Ready to focus! 🎯</div>
+        </div>
+
+        <!-- To-Do List Card -->
+        <div class="card todo-card">
+          <div class="card-header">
+            <h2>To-Do List</h2>
+            <button class="btn-primary" id="addTaskBtn">+ Add Task</button>
+          </div>
+          <div class="todo-list" id="todoList">
+            <!-- Tasks will be added here dynamically -->
+          </div>
+        </div>
+
+        <!-- Quick Links Card -->
+        <div class="card links-card">
+          <h2>Quick Links</h2>
+          <div class="links-grid">
+            <button class="link-item">Google Drive</button>
+            <button class="link-item">University Portal</button>
+            <button class="link-item">YouTube</button>
+            <button class="link-item">Spotify</button>
+            <button class="link-item">Notion</button>
+            <button class="link-item">+ Add Link</button>
+          </div>
+        </div>
+
+        <!-- Motivational Quotes Card -->
+        <div class="card quotes-card">
+          <h2>Daily Motivation</h2>
+          <div class="quote-content">
+            <p id="currentQuote">"The secret of getting ahead is getting started." - Mark Twain</p>
+            <button class="btn-secondary" id="newQuote">New Quote</button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="contact">
-    <div class="container">
-      <h1>Contact Us</h1>
-      <p class="section-desc">Have questions or suggestions? We'd love to hear from you.</p>
-      
-      <div class="card">
-        <h2 class="section">Get In Touch</h2>
-        <form class="contact-form">
-          <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name">
-          </div>
-          <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email">
-          </div>
-          <div class="form-group">
-            <label for="message">Message</label>
-            <textarea id="message" rows="5"></textarea>
-          </div>
-          <button type="submit">Send Message</button>
-        </form>
+    <!-- To-Do List Section -->
+    <section class="content-section" id="todo">
+      <div class="section-header">
+        <h1>To-Do List</h1>
+        <p>Manage your tasks and assignments</p>
       </div>
+      <!-- To-Do content will be loaded here -->
+    </section>
+
+    <!-- Timer Section -->
+    <section class="content-section" id="timer">
+      <div class="section-header">
+        <h1>Pomodoro Timer</h1>
+        <p>Focus on your studies with timed sessions</p>
+      </div>
+      <!-- Timer content will be loaded here -->
+    </section>
+  </main>
+
+  <!-- Add Task Modal -->
+  <div class="modal" id="addTaskModal">
+    <div class="modal-content">
+      <h3>Add New Task</h3>
+      <form id="taskForm">
+        <input type="text" id="taskTitle" placeholder="Task title" required>
+        <textarea id="taskDescription" placeholder="Description (optional)"></textarea>
+        <input type="datetime-local" id="taskDueDate">
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
+          <button type="submit" class="btn-primary">Add Task</button>
+        </div>
+      </form>
     </div>
-  </section>
+  </div>
 
 </body>
 </html>
