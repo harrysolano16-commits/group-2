@@ -9,103 +9,129 @@
 </head>
 <body>
   <!-- Top Navigation Bar -->
-  <nav class="top-navbar">
-    <div class="nav-left">
-      <div class="sidebar-toggle" id="sidebarToggle">
-        <span></span>
-        <span></span>
-        <span></span>
+  <header>
+    <nav class="top-navbar" aria-label="Main navigation">
+      <div class="nav-left">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="logo">
+          <img src="logo.png" alt="StudySync logo" width="150" height="42">
+        </div>  
       </div>
-      <div class="logo">
-        <img src="logo.png" alt="StudySync logo">
-      </div>  
-    </div>
-    
-    <div class="nav-center">
-      <div class="search-bar">
-        <input type="text" placeholder="Search tasks and tools...">
+      
+      <div class="nav-center">
+        <div class="search-bar">
+          <input type="text" placeholder="Search tasks and tools..." aria-label="Search">
+        </div>
+        <button class="search_icon_mobile" id="searchmobiletoggle" aria-label="Open search">🔍</button>
       </div>
-      <button class="search_icon_mobile" id="searchmobiletoggle">🔍</button>
-    </div>
-    
-    <div class="nav-right">
-      <button class="nav-icon" id="notificationsBtn">🔔</button>
-      <button class="nav-icon" id="profileBtn">👤</button>
-      <button class="nav-icon" id="settingsBtn">⚙️</button>
-    </div>
-  </nav>
+      
+      <div class="nav-right">
+        <button class="nav-icon" id="notificationsBtn" aria-label="Notifications">🔔</button>
+        <button class="nav-icon" id="profileBtn" aria-label="Profile">👤</button>
+        <button class="nav-icon" id="settingsBtn" aria-label="Settings">⚙️</button>
+      </div>
+    </nav>
+  </header>
 
   <!-- Collapsible Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <nav class="sidebar-nav">
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+    <nav class="sidebar-nav" aria-label="App sections">
       <!-- Core Features Section -->
-      <div class="nav-section">
-        <h3>CORE FEATURES</h3>
+      <section class="nav-section" aria-labelledby="core-features-heading">
+        <h3 id="core-features-heading">CORE FEATURES</h3>
         <ul>
-          <li class="nav-item active" data-section="dashboard">
-            <span>🏠</span>
-            <span>Dashboard</span>
+          <li>
+            <button class="nav-item active" data-section="dashboard" aria-current="page">
+              <span aria-hidden="true">🏠</span>
+              <span>Dashboard</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="todo">
-            <span>📝</span>
-            <span>To-Do List</span>
+          <li>
+            <button class="nav-item" data-section="todo">
+              <span aria-hidden="true">📝</span>
+              <span>To-Do List</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="timer">
-            <span>⏱️</span>
-            <span>Pomodoro Timer</span>
+          <li>
+            <button class="nav-item" data-section="timer">
+              <span aria-hidden="true">⏱️</span>
+              <span>Pomodoro Timer</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="links">
-            <span>🔗</span>
-            <span>Quick Links</span>
+          <li>
+            <button class="nav-item" data-section="links">
+              <span aria-hidden="true">🔗</span>
+              <span>Quick Links</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="quotes">
-            <span>💭</span>
-            <span>Motivational Quotes</span>
+          <li>
+            <button class="nav-item" data-section="quotes">
+              <span aria-hidden="true">💭</span>
+              <span>Motivational Quotes</span>
+            </button>
           </li>
         </ul>
-      </div>
+      </section>
 
       <!-- Tools Section -->
-      <div class="nav-section">
-        <h3>TOOLS</h3>
+      <section class="nav-section" aria-labelledby="tools-heading">
+        <h3 id="tools-heading">TOOLS</h3>
         <ul>
-          <li class="nav-item" data-section="pdf-converter">
-            <span>📄</span>
-            <span>PDF Converter</span>
+          <li>
+            <button class="nav-item" data-section="pdf-converter">
+              <span aria-hidden="true">📄</span>
+              <span>PDF Converter</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="flashcards">
-            <span>🃏</span>
-            <span>Flashcard Generator</span>
+          <li>
+            <button class="nav-item" data-section="flashcards">
+              <span aria-hidden="true">🃏</span>
+              <span>Flashcard Generator</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="quiz-maker">
-            <span>❓</span>
-            <span>Quiz Maker</span>
+          <li>
+            <button class="nav-item" data-section="quiz-maker">
+              <span aria-hidden="true">❓</span>
+              <span>Quiz Maker</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="pdf-combiner">
-            <span>🔗</span>
-            <span>PDF Combiner</span>
+          <li>
+            <button class="nav-item" data-section="pdf-combiner">
+              <span aria-hidden="true">🔗</span>
+              <span>PDF Combiner</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="pdf-summarizer">
-            <span>📊</span>
-            <span>PDF Summarizer</span>
+          <li>
+            <button class="nav-item" data-section="pdf-summarizer">
+              <span aria-hidden="true">📊</span>
+              <span>PDF Summarizer</span>
+            </button>
           </li>
         </ul>
-      </div>
+      </section>
 
       <!-- Settings Section -->
-      <div class="nav-section">
-        <h3>SETTINGS</h3>
+      <section class="nav-section" aria-labelledby="settings-heading">
+        <h3 id="settings-heading">SETTINGS</h3>
         <ul>
-          <li class="nav-item" data-section="theme">
-            <span>🎨</span>
-            <span>Theme Settings</span>
+          <li>
+            <button class="nav-item" data-section="theme">
+              <span aria-hidden="true">🎨</span>
+              <span>Theme Settings</span>
+            </button>
           </li>
-          <li class="nav-item" data-section="account">
-            <span>👤</span>
-            <span>Account</span>
+          <li>
+            <button class="nav-item" data-section="account">
+              <span aria-hidden="true">👤</span>
+              <span>Account</span>
+            </button>
           </li>
         </ul>
-      </div>
+      </section>
     </nav>
   </aside>
 
@@ -113,12 +139,12 @@
   <main class="main-content" id="mainContent">
     
     <!-- Dashboard Section (Default View) -->
-    <section class="content-section active" id="dashboard">
+    <section class="content-section active" id="dashboard" aria-labelledby="dashboard-heading">
       <div class="dashboard-grid">
         <!-- Timer Card -->
-        <div class="card timer-card">
+        <article class="card timer-card">
           <h2>Pomodoro Timer</h2>
-          <div class="timer-display">
+          <div class="timer-display" aria-live="polite">
             <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
           </div>
           <div class="timer-controls">
@@ -126,22 +152,23 @@
             <button class="btn-secondary" id="pauseTimer">Pause</button>
             <button class="btn-secondary" id="resetTimer">Reset</button>
           </div>
-          <div class="timer-status">Ready to focus! 🎯</div>
-        </div>
+          <div class="timer-status" aria-live="polite">Ready to focus! 🎯</div>
+        </article>
 
         <!-- To-Do List Card -->
-        <div class="card todo-card">
+        <article class="card todo-card">
           <div class="card-header">
             <h2>To-Do List</h2>
             <button class="btn-primary" id="addTaskBtn">+ Add Task</button>
           </div>
-          <div class="todo-list" id="todoList">
+          <div class="todo-list" id="todoList" aria-live="polite">
             <!-- Tasks will be added here dynamically -->
+            <p class="empty-state">No tasks yet. Add your first task!</p>
           </div>
-        </div>
+        </article>
 
         <!-- Quick Links Card -->
-        <div class="card links-card">
+        <article class="card links-card">
           <h2>Quick Links</h2>
           <div class="links-grid">
             <button class="link-item">Google Drive</button>
@@ -151,46 +178,69 @@
             <button class="link-item">Notion</button>
             <button class="link-item">+ Add Link</button>
           </div>
-        </div>
+        </article>
 
         <!-- Motivational Quotes Card -->
-        <div class="card quotes-card">
+        <article class="card quotes-card">
           <h2>Daily Motivation</h2>
           <div class="quote-content">
-            <p id="currentQuote">"The secret of getting ahead is getting started." - Mark Twain</p>
+            <blockquote>
+              <p id="currentQuote">"The secret of getting ahead is getting started." - Mark Twain</p>
+            </blockquote>
             <button class="btn-secondary" id="newQuote">New Quote</button>
           </div>
-        </div>
+        </article>
       </div>
     </section>
 
     <!-- To-Do List Section -->
-    <section class="content-section" id="todo">
+    <section class="content-section" id="todo" aria-labelledby="todo-heading">
       <div class="section-header">
-        <h1>To-Do List</h1>
+        <h1 id="todo-heading">To-Do List</h1>
         <p>Manage your tasks and assignments</p>
       </div>
       <!-- To-Do content will be loaded here -->
     </section>
 
     <!-- Timer Section -->
-    <section class="content-section" id="timer">
+    <section class="content-section" id="timer" aria-labelledby="timer-heading">
       <div class="section-header">
-        <h1>Pomodoro Timer</h1>
+        <h1 id="timer-heading">Pomodoro Timer</h1>
         <p>Focus on your studies with timed sessions</p>
       </div>
       <!-- Timer content will be loaded here -->
     </section>
+
+    <!-- Add more sections for other features -->
+    <section class="content-section" id="links" aria-labelledby="links-heading">
+      <div class="section-header">
+        <h1 id="links-heading">Quick Links</h1>
+        <p>Access your frequently used resources</p>
+      </div>
+    </section>
+
+    <section class="content-section" id="quotes" aria-labelledby="quotes-heading">
+      <div class="section-header">
+        <h1 id="quotes-heading">Motivational Quotes</h1>
+        <p>Get inspired with daily motivation</p>
+      </div>
+    </section>
   </main>
 
   <!-- Add Task Modal -->
-  <div class="modal" id="addTaskModal">
+  <div class="modal" id="addTaskModal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
     <div class="modal-content">
-      <h3>Add New Task</h3>
+      <h3 id="modal-title">Add New Task</h3>
       <form id="taskForm">
+        <label for="taskTitle" class="sr-only">Task title</label>
         <input type="text" id="taskTitle" placeholder="Task title" required>
+        
+        <label for="taskDescription" class="sr-only">Task description</label>
         <textarea id="taskDescription" placeholder="Description (optional)"></textarea>
+        
+        <label for="taskDueDate">Due date</label>
         <input type="datetime-local" id="taskDueDate">
+        
         <div class="modal-actions">
           <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
           <button type="submit" class="btn-primary">Add Task</button>
