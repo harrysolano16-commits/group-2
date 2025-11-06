@@ -216,6 +216,7 @@ body {
 
 .sidebar-nav {
   padding: 20px 0;
+  align-item: center;
 }
 
 .nav-section {
@@ -708,4 +709,5 @@ body {
   .sidebar:not(.collapsed) ~ .main-content {
     margin-left: var(--sidebar-width);
   }
+
 }
