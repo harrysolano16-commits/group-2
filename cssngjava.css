@@ -83,11 +83,11 @@ body {
 .logo {
   display: flex;
   align-items: center;
-  height: 84px;
+  height: 42px;
 }
 
 .logo img {
-  height: 100%;
+  height: 42px;
   width: auto;
   max-width: 150px;
   object-fit: contain;
@@ -239,6 +239,10 @@ body {
   transition: var(--transition);
   color: var(--text-primary);
   text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
 }
 
 .nav-item:hover {
@@ -423,6 +427,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: var(--transition);
 }
 
 .task-checkbox.checked {
@@ -450,6 +455,14 @@ body {
   margin-top: 2px;
 }
 
+/* Empty state for todo list */
+.empty-state {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
+
 /* Quick Links */
 .links-grid {
   display: grid;
@@ -457,20 +470,44 @@ body {
   gap: 10px;
 }
 
+/* Quick Links - Make sure anchor tags look like buttons */
 .link-item {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-color);
-  padding: 15px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: var(--transition);
-  text-align: center;
-  color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 15px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    color: var(--text-primary);
+    text-decoration: none; /* Remove underline from links */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: inherit; /* Use same font as buttons */
+    font-size: inherit; /* Use same font size as buttons */
+    min-height: 60px; /* Ensure consistent height */
 }
 
 .link-item:hover {
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    text-decoration: none; /* No underline on hover */
+    color: var(--text-primary); /* Same color on hover */
+}
+
+/* Specific style for the actual button (Add Link) */
+button.link-item {
+    /* You can add specific button styles here if needed */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    /* These ensure button styling is consistent */
+    font-family: inherit;
+    font-size: inherit;
+}
+
+button.link-item:hover {
+    border-color: var(--primary-color);
 }
 
 /* Quotes */
@@ -497,6 +534,7 @@ body {
   z-index: 2000;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(2px);
 }
 
 .modal.active {
@@ -510,6 +548,41 @@ body {
   width: 90%;
   max-width: 500px;
   border: 1px solid var(--border-color);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  transition: var(--transition);
+}
+
+.close-modal:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-content h3 {
@@ -540,6 +613,145 @@ body {
   gap: 10px;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Full view sections */
+.todo-full-view,
+.timer-full-view,
+.links-full-view,
+.quotes-full-view {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 30px;
+  border: 1px solid var(--border-color);
+}
+
+.todo-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.todo-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filter-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.timer-display-full {
+  font-size: 5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 30px 0;
+  color: var(--primary-color);
+  font-family: 'Courier New', monospace;
+}
+
+.timer-controls-full {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.timer-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 300px;
+  margin: 0 auto 20px;
+}
+
+.timer-settings label {
+  color: var(--text-secondary);
+}
+
+.timer-settings input {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.timer-status-full {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.links-grid-full {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.quote-display-full {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius);
+}
+
+.quote-display-full p {
+  font-size: 1.5rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.quote-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.saved-quotes {
+  margin-top: 30px;
+}
+
+.saved-quotes h3 {
+  margin-bottom: 15px;
+  color: var(--text-primary);
+}
+
+#savedQuotesList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-quote-item {
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border-left: 3px solid var(--primary-color);
 }
 
 /* Overlays & Backdrops */
@@ -595,6 +807,7 @@ body {
   .sidebar {
     transform: translateX(-100%);
     width: 280px;
+    transition: transform 0.3s ease;
   }
   
   .sidebar.active,
@@ -692,6 +905,20 @@ body {
   
   .timer-display {
     font-size: 2.5rem;
+  }
+  
+  .timer-display-full {
+    font-size: 3.5rem;
+  }
+  
+  .todo-actions {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .quote-display-full p {
+    font-size: 1.2rem;
   }
 }
 

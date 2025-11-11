@@ -65,6 +65,354 @@ const searchData = [
     { title: 'Account', section: 'account', type: 'settings', description: 'Manage your account settings' }
 ];
 
+// Timer functionality
+let timerInterval;
+let timerMinutes = 25;
+let timerSeconds = 0;
+let isTimerRunning = false;
+let isBreakTime = false;
+
+function startTimer() {
+    if (isTimerRunning) return;
+    
+    isTimerRunning = true;
+    const timerDisplay = document.querySelector('.timer-display');
+    const statusDisplay = document.querySelector('.timer-status');
+    
+    statusDisplay.textContent = isBreakTime ? 'Break time! ☕' : 'Focus time! 🎯';
+    
+    timerInterval = setInterval(() => {
+        if (timerSeconds === 0) {
+            if (timerMinutes === 0) {
+                clearInterval(timerInterval);
+                isTimerRunning = false;
+                
+                // Switch between work and break
+                isBreakTime = !isBreakTime;
+                if (isBreakTime) {
+                    timerMinutes = parseInt(document.getElementById('breakDuration')?.value || 5);
+                    statusDisplay.textContent = 'Break time! Session complete! 🎉';
+                } else {
+                    timerMinutes = parseInt(document.getElementById('workDuration')?.value || 25);
+                    statusDisplay.textContent = 'Focus time! Break complete! ⏰';
+                }
+                
+                timerSeconds = 0;
+                updateTimerDisplay();
+                
+                // Optional: Play sound notification
+                // new Audio('notification.mp3').play().catch(e => console.log('Audio play failed:', e));
+                return;
+            }
+            timerMinutes--;
+            timerSeconds = 59;
+        } else {
+            timerSeconds--;
+        }
+        
+        updateTimerDisplay();
+    }, 1000);
+}
+
+function pauseTimer() {
+    if (!isTimerRunning) return;
+    
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    document.querySelector('.timer-status').textContent = 'Paused ⏸️';
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    isBreakTime = false;
+    timerMinutes = parseInt(document.getElementById('workDuration')?.value || 25);
+    timerSeconds = 0;
+    updateTimerDisplay();
+    document.querySelector('.timer-status').textContent = 'Ready to focus! 🎯';
+}
+
+function updateTimerDisplay() {
+    const minutesDisplay = document.getElementById('timerMinutes');
+    const secondsDisplay = document.getElementById('timerSeconds');
+    const minutesDisplayFull = document.getElementById('timerMinutesFull');
+    const secondsDisplayFull = document.getElementById('timerSecondsFull');
+    
+    const formattedMinutes = timerMinutes.toString().padStart(2, '0');
+    const formattedSeconds = timerSeconds.toString().padStart(2, '0');
+    
+    if (minutesDisplay) minutesDisplay.textContent = formattedMinutes;
+    if (secondsDisplay) secondsDisplay.textContent = formattedSeconds;
+    if (minutesDisplayFull) minutesDisplayFull.textContent = formattedMinutes;
+    if (secondsDisplayFull) secondsDisplayFull.textContent = formattedSeconds;
+}
+
+// Todo List functionality
+let tasks = [];
+
+function openAddTaskModal() {
+    const modal = document.getElementById('addTaskModal');
+    modal.style.display = 'flex';
+    document.getElementById('taskTitle').focus();
+}
+
+function closeAddTaskModal() {
+    const modal = document.getElementById('addTaskModal');
+    modal.style.display = 'none';
+    document.getElementById('taskForm').reset();
+}
+
+function addTask(event) {
+    event.preventDefault();
+    
+    const title = document.getElementById('taskTitle').value.trim();
+    const description = document.getElementById('taskDescription').value.trim();
+    const dueDate = document.getElementById('taskDueDate').value;
+    
+    if (!title) return;
+    
+    const newTask = {
+        id: Date.now(),
+        title,
+        description,
+        dueDate,
+        completed: false
+    };
+    
+    tasks.push(newTask);
+    saveTasks();
+    renderTasks();
+    closeAddTaskModal();
+}
+
+function renderTasks() {
+    const todoList = document.getElementById('todoList');
+    const todoListFull = document.getElementById('todoListFull');
+    
+    // Get current filter
+    const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+    
+    // Filter tasks
+    let filteredTasks = tasks;
+    if (activeFilter === 'active') {
+        filteredTasks = tasks.filter(task => !task.completed);
+    } else if (activeFilter === 'completed') {
+        filteredTasks = tasks.filter(task => task.completed);
+    }
+    
+    // Render dashboard todo list (only show 5 most recent)
+    if (todoList) {
+        const dashboardTasks = filteredTasks.slice(0, 5);
+        
+        if (dashboardTasks.length === 0) {
+            todoList.innerHTML = '<p class="empty-state">No tasks yet. Add your first task!</p>';
+        } else {
+            todoList.innerHTML = dashboardTasks.map(task => `
+                <div class="todo-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-content">
+                        <div class="task-text">${task.title}</div>
+                        ${task.dueDate ? `<div class="task-due">Due: ${new Date(task.dueDate).toLocaleString()}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    // Render full todo list
+    if (todoListFull) {
+        if (filteredTasks.length === 0) {
+            todoListFull.innerHTML = '<p class="empty-state">No tasks match your filter.</p>';
+        } else {
+            todoListFull.innerHTML = filteredTasks.map(task => `
+                <div class="todo-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-content">
+                        <div class="task-text">${task.title}</div>
+                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                        ${task.dueDate ? `<div class="task-due">Due: ${new Date(task.dueDate).toLocaleString()}</div>` : ''}
+                    </div>
+                    <button class="btn-secondary" onclick="deleteTask(${task.id})">Delete</button>
+                </div>
+            `).join('');
+        }
+    }
+}
+
+function toggleTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+        renderTasks();
+    }
+}
+
+function deleteTask(taskId) {
+    tasks = tasks.filter(t => t.id !== taskId);
+    saveTasks();
+    renderTasks();
+}
+
+// Local Storage for data persistence
+function saveTasks() {
+    localStorage.setItem('studysync-tasks', JSON.stringify(tasks));
+}
+
+function loadTasks() {
+    const saved = localStorage.getItem('studysync-tasks');
+    if (saved) {
+        tasks = JSON.parse(saved);
+        renderTasks();
+    }
+}
+
+// Quick Links functionality
+let quickLinks = [
+    { name: 'Google Drive', url: 'https://drive.google.com' },
+    { name: 'University Portal', url: 'https://university.edu' },
+    { name: 'YouTube', url: 'https://youtube.com' },
+    { name: 'Spotify', url: 'https://spotify.com' },
+    { name: 'Notion', url: 'https://notion.so' }
+];
+
+function openAddLinkModal() {
+    const modal = document.getElementById('addLinkModal');
+    modal.style.display = 'flex';
+    document.getElementById('linkName').focus();
+}
+
+function closeAddLinkModal() {
+    const modal = document.getElementById('addLinkModal');
+    modal.style.display = 'none';
+    document.getElementById('linkForm').reset();
+}
+
+function addLink(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('linkName').value.trim();
+    const url = document.getElementById('linkUrl').value.trim();
+    
+    if (!name || !url) return;
+    
+    // Add http:// if missing
+    let formattedUrl = url;
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+        formattedUrl = 'https://' + formattedUrl;
+    }
+    
+    const newLink = {
+        name,
+        url: formattedUrl
+    };
+    
+    quickLinks.push(newLink);
+    saveQuickLinks();
+    renderQuickLinks();
+    closeAddLinkModal();
+}
+
+function renderQuickLinks() {
+    const linksGrid = document.querySelector('.links-grid');
+    const linksGridFull = document.getElementById('linksGridFull');
+    
+    // Render dashboard links - using <a> tags that open in new tabs
+    if (linksGrid) {
+        linksGrid.innerHTML = quickLinks.map(link => `
+            <a href="${link.url}" target="_blank" class="link-item">
+                ${link.name}
+            </a>
+        `).join('') + '<button class="link-item" id="addLinkBtn">+ Add Link</button>';
+        
+        // Reattach event listener for the Add Link button
+        document.getElementById('addLinkBtn').addEventListener('click', openAddLinkModal);
+    }
+    
+    // Render full links view
+    if (linksGridFull) {
+        linksGridFull.innerHTML = quickLinks.map(link => `
+            <a href="${link.url}" target="_blank" class="link-item">
+                ${link.name}
+            </a>
+        `).join('') + '<button class="link-item" id="addLinkFullBtn">+ Add Link</button>';
+        
+        // Reattach event listener for full view
+        document.getElementById('addLinkFullBtn')?.addEventListener('click', openAddLinkModal);
+    }
+}
+
+function saveQuickLinks() {
+    localStorage.setItem('studysync-links', JSON.stringify(quickLinks));
+}
+
+function loadQuickLinks() {
+    const saved = localStorage.getItem('studysync-links');
+    if (saved) {
+        quickLinks = JSON.parse(saved);
+        renderQuickLinks();
+    }
+}
+
+// Motivational Quotes
+const quotes = [
+    "The secret of getting ahead is getting started. - Mark Twain",
+    "Don't let what you cannot do interfere with what you can do. - John Wooden",
+    "The way to get started is to quit talking and begin doing. - Walt Disney",
+    "It's not whether you get knocked down, it's whether you get up. - Vince Lombardi",
+    "Your time is limited, so don't waste it living someone else's life. - Steve Jobs",
+    "Education is the most powerful weapon which you can use to change the world. - Nelson Mandela",
+    "The beautiful thing about learning is that no one can take it away from you. - B.B. King",
+    "Success is the sum of small efforts, repeated day in and day out. - Robert Collier"
+];
+
+let savedQuotes = [];
+
+function getRandomQuote() {
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    const quoteElement = document.getElementById('currentQuote');
+    const quoteElementFull = document.getElementById('currentQuoteFull');
+    
+    if (quoteElement) quoteElement.textContent = `"${quotes[randomIndex]}"`;
+    if (quoteElementFull) quoteElementFull.textContent = `"${quotes[randomIndex]}"`;
+}
+
+function saveCurrentQuote() {
+    const currentQuote = document.getElementById('currentQuoteFull')?.textContent || 
+                         document.getElementById('currentQuote')?.textContent;
+    
+    if (currentQuote && !savedQuotes.includes(currentQuote)) {
+        savedQuotes.push(currentQuote);
+        saveSavedQuotes();
+        renderSavedQuotes();
+    }
+}
+
+function renderSavedQuotes() {
+    const savedQuotesList = document.getElementById('savedQuotesList');
+    if (savedQuotesList) {
+        if (savedQuotes.length === 0) {
+            savedQuotesList.innerHTML = '<p class="empty-state">No saved quotes yet.</p>';
+        } else {
+            savedQuotesList.innerHTML = savedQuotes.map(quote => `
+                <div class="saved-quote-item">${quote}</div>
+            `).join('');
+        }
+    }
+}
+
+function saveSavedQuotes() {
+    localStorage.setItem('studysync-saved-quotes', JSON.stringify(savedQuotes));
+}
+
+function loadSavedQuotes() {
+    const saved = localStorage.getItem('studysync-saved-quotes');
+    if (saved) {
+        savedQuotes = JSON.parse(saved);
+        renderSavedQuotes();
+    }
+}
+
 // Sidebar Functions
 function toggleSidebar() {
     if (window.innerWidth <= 768) {
@@ -297,6 +645,9 @@ overlay.addEventListener('click', function() {
 // Close sidebar when clicking on a nav item (mobile)
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function() {
+        const section = this.dataset.section;
+        navigateToSection(section);
+        
         if (window.innerWidth <= 768) {
             sidebar.classList.remove('active');
             overlay.style.display = 'none';
@@ -359,6 +710,87 @@ searchInput.addEventListener('keydown', function(e) {
     }
 });
 
+// Timer event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Timer functionality
+    document.getElementById('startTimer')?.addEventListener('click', startTimer);
+    document.getElementById('pauseTimer')?.addEventListener('click', pauseTimer);
+    document.getElementById('resetTimer')?.addEventListener('click', resetTimer);
+    
+    document.getElementById('startTimerFull')?.addEventListener('click', startTimer);
+    document.getElementById('pauseTimerFull')?.addEventListener('click', pauseTimer);
+    document.getElementById('resetTimerFull')?.addEventListener('click', resetTimer);
+    
+    // Todo functionality
+    document.getElementById('addTaskBtn')?.addEventListener('click', openAddTaskModal);
+    document.getElementById('addTaskFullBtn')?.addEventListener('click', openAddTaskModal);
+    document.getElementById('cancelTask')?.addEventListener('click', closeAddTaskModal);
+    document.getElementById('closeTaskModal')?.addEventListener('click', closeAddTaskModal);
+    document.getElementById('taskForm')?.addEventListener('submit', addTask);
+    
+    // Quick Links functionality
+    document.getElementById('addLinkBtn')?.addEventListener('click', openAddLinkModal);
+    document.getElementById('addLinkFullBtn')?.addEventListener('click', openAddLinkModal);
+    document.getElementById('cancelLink')?.addEventListener('click', closeAddLinkModal);
+    document.getElementById('closeLinkModal')?.addEventListener('click', closeAddLinkModal);
+    document.getElementById('linkForm')?.addEventListener('submit', addLink);
+    
+    // Quotes functionality
+    document.getElementById('newQuote')?.addEventListener('click', getRandomQuote);
+    document.getElementById('newQuoteFull')?.addEventListener('click', getRandomQuote);
+    document.getElementById('saveQuoteBtn')?.addEventListener('click', saveCurrentQuote);
+    
+    // Todo filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderTasks();
+        });
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('addTaskModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddTaskModal();
+        }
+    });
+    
+    document.getElementById('addLinkModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAddLinkModal();
+        }
+    });
+    
+    // Initialize displays
+    updateTimerDisplay();
+    loadTasks();
+    loadQuickLinks();
+    loadSavedQuotes();
+    getRandomQuote();
+    
+    // Set initial state based on screen size
+    if (window.innerWidth > 768) {
+        mainContent.style.marginLeft = '240px';
+    } else {
+        mainContent.style.marginLeft = '0';
+    }
+    
+    // Load saved sidebar state from localStorage (optional)
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true' && window.innerWidth > 768) {
+        sidebar.classList.add('collapsed');
+        mainContent.style.marginLeft = '60px';
+    }
+});
+
+// Save sidebar state when toggled (optional enhancement)
+sidebarToggle.addEventListener('click', function() {
+    if (window.innerWidth > 768) {
+        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+    }
+});
+
 // Window resize handler
 let resizeTimeout;
 window.addEventListener('resize', function() {
@@ -387,28 +819,4 @@ window.addEventListener('resize', function() {
         // Clear search results on resize
         hideSearchResults();
     }, 100);
-});
-
-// Initialize on load
-document.addEventListener('DOMContentLoaded', function() {
-    // Set initial state based on screen size
-    if (window.innerWidth > 768) {
-        mainContent.style.marginLeft = '240px';
-    } else {
-        mainContent.style.marginLeft = '0';
-    }
-    
-    // Load saved sidebar state from localStorage (optional)
-    const savedState = localStorage.getItem('sidebarCollapsed');
-    if (savedState === 'true' && window.innerWidth > 768) {
-        sidebar.classList.add('collapsed');
-        mainContent.style.marginLeft = '60px';
-    }
-});
-
-// Save sidebar state when toggled (optional enhancement)
-sidebarToggle.addEventListener('click', function() {
-    if (window.innerWidth > 768) {
-        localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-    }
 });
