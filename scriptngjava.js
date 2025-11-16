@@ -59,6 +59,7 @@ const searchData = [
     { title: 'Quiz Maker', section: 'quiz-maker', type: 'tool', description: 'Generate custom quizzes' },
     { title: 'PDF Combiner', section: 'pdf-combiner', type: 'tool', description: 'Merge multiple PDF files' },
     { title: 'PDF Summarizer', section: 'pdf-summarizer', type: 'tool', description: 'Summarize PDF documents' },
+    { title: 'Background Remover', section: 'bg-remover', type: 'tool', description: 'Remove Background from images' },
     
     // Settings
     { title: 'Theme Settings', section: 'theme', type: 'settings', description: 'Customize appearance and themes' },
@@ -119,7 +120,8 @@ function pauseTimer() {
     
     clearInterval(timerInterval);
     isTimerRunning = false;
-    document.querySelector('.timer-status').textContent = 'Paused ⏸️';
+    const statusDisplay = document.querySelector('.timer-status');
+    if (statusDisplay) statusDisplay.textContent = 'Paused ⏸️';
 }
 
 function resetTimer() {
@@ -129,7 +131,8 @@ function resetTimer() {
     timerMinutes = parseInt(document.getElementById('workDuration')?.value || 25);
     timerSeconds = 0;
     updateTimerDisplay();
-    document.querySelector('.timer-status').textContent = 'Ready to focus! 🎯';
+    const statusDisplay = document.querySelector('timer-status');
+    if (statusDisplay) statusDisplay.textContent = 'Ready to focus! 🎯';
 }
 
 function updateTimerDisplay() {
@@ -710,6 +713,285 @@ searchInput.addEventListener('keydown', function(e) {
     }
 });
 
+// Background Remover Functionality
+let currentImage = null;
+let processedImageUrl = null;
+
+// Remove.bg API Configuration
+const BG_REMOVER_API = {
+  removeBg: async (imageFile) => {
+    const apiKey = 'jTZa6MtpPWM4L9K26a6ZuVko';
+    
+    const formData = new FormData();
+    formData.append('image_file', imageFile);
+    formData.append('size', 'auto');
+    
+    try {
+      console.log('Sending request to Remove.bg API...');
+      const response = await fetch('https://api.remove.bg/v1.0/removebg', {
+        method: 'POST',
+        headers: {
+          'X-Api-Key': apiKey,
+        },
+        body: formData
+      });
+      
+      console.log('Response status:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Background removal failed: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      
+      const blob = await response.blob();
+      console.log('Received blob from API');
+      return blob;
+      
+    } catch (error) {
+      console.error('Network/API Error:', error);
+      throw error;
+    }
+  }
+};
+
+// Initialize background remover
+// Initialize background remover
+function initBackgroundRemover() {
+  const uploadArea = document.getElementById('uploadArea');
+  const imageInput = document.getElementById('imageInput');
+  const selectImageBtn = document.getElementById('selectImageBtn');
+  const removeBgBtn = document.getElementById('removeBgBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  
+  // Only initialize if elements exist (user is on bg-remover page)
+  if (!uploadArea) return;
+  
+  // Clear any existing file input value (fixes mobile issue)
+  if (imageInput) imageInput.value = '';
+  
+  // Event listeners
+  selectImageBtn.addEventListener('click', () => {
+    // Clear input first to ensure change event fires on mobile
+    if (imageInput) imageInput.value = '';
+    imageInput.click();
+  });
+  
+  imageInput.addEventListener('change', function(e) {
+    console.log('File input changed, files:', e.target.files);
+    handleImageSelect(e);
+  });
+  
+  uploadArea.addEventListener('click', () => {
+    // Clear input first to ensure change event fires on mobile
+    if (imageInput) imageInput.value = '';
+    imageInput.click();
+  });
+  
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+  });
+  
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    
+    const files = e.dataTransfer.files;
+    console.log('Files dropped:', files);
+    if (files.length > 0 && files[0].type.startsWith('image/')) {
+      handleImageFile(files[0]);
+    }
+  });
+  
+  removeBgBtn.addEventListener('click', removeBackground);
+  downloadBtn.addEventListener('click', downloadResult);
+  resetBtn.addEventListener('click', resetBgRemover);
+  
+  console.log('Background remover initialized successfully');
+}
+
+function handleImageSelect(e) {
+  console.log('handleImageSelect called, files:', e.target.files);
+  
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    console.log('Valid image selected:', file.name);
+    handleImageFile(file);
+  } else {
+    console.log('No valid image file selected');
+  }
+}
+
+function handleImageFile(file) {
+  console.log('handleImageFile called with:', file.name);
+  
+  currentImage = file;
+  
+  const originalPreview = document.getElementById('originalPreview');
+  const removeBgBtn = document.getElementById('removeBgBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const resultPreview = document.getElementById('resultPreview');
+  
+  const reader = new FileReader();
+  
+  reader.onload = function(e) {
+    console.log('FileReader loaded image successfully');
+    
+    if (originalPreview) {
+      originalPreview.innerHTML = `<img src="${e.target.result}" alt="Original image">`;
+      console.log('Original preview updated');
+    }
+    if (removeBgBtn) {
+      removeBgBtn.disabled = false;
+      console.log('Remove background button enabled');
+    }
+    if (downloadBtn) {
+      downloadBtn.disabled = true;
+    }
+    
+    // Clear previous result
+    if (resultPreview) {
+      resultPreview.innerHTML = '<p>Result will appear here</p>';
+    }
+    processedImageUrl = null;
+  };
+  
+  reader.onerror = function(error) {
+    console.error('FileReader error:', error);
+    alert('Error reading the image file. Please try again.');
+  };
+  
+  reader.readAsDataURL(file);
+}
+
+async function removeBackground() {
+  if (!currentImage) return;
+  
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const removeBgBtn = document.getElementById('removeBgBtn');
+  const resultPreview = document.getElementById('resultPreview');
+  const downloadBtn = document.getElementById('downloadBtn');
+  
+  if (loadingSpinner) loadingSpinner.style.display = 'block';
+  if (removeBgBtn) removeBgBtn.disabled = true;
+  
+  try {
+    console.log('=== BACKGROUND REMOVER DEBUG INFO ===');
+    console.log('1. Current image:', currentImage);
+    console.log('2. Image name:', currentImage.name);
+    console.log('3. Image size:', currentImage.size, 'bytes');
+    console.log('4. Image type:', currentImage.type);
+    console.log('5. API Key being used:', 'jTZa6MtpPWM4L9K26a6ZuVko');
+    
+    // Test if the image is valid
+    if (currentImage.size === 0) {
+      throw new Error('Image file is empty');
+    }
+    if (currentImage.size > 12 * 1024 * 1024) {
+      throw new Error('Image is too large (max 12MB)');
+    }
+    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(currentImage.type)) {
+      throw new Error('Unsupported image format. Use JPG, PNG, or WEBP');
+    }
+    
+    console.log('6. Making API request to Remove.bg...');
+    
+    const processedBlob = await BG_REMOVER_API.removeBg(currentImage);
+    
+    console.log('7. API response received!');
+    console.log('8. Processed blob size:', processedBlob.size, 'bytes');
+    console.log('9. Processed blob type:', processedBlob.type);
+    
+    if (processedBlob.size === 0) {
+      throw new Error('Received empty response from API');
+    }
+    
+    processedImageUrl = URL.createObjectURL(processedBlob);
+    console.log('10. Created object URL:', processedImageUrl);
+    
+    if (resultPreview) {
+      resultPreview.innerHTML = `<img src="${processedImageUrl}" alt="Background removed">`;
+      console.log('11. Image displayed in result preview');
+    } else {
+      console.error('11. ERROR: resultPreview element not found!');
+    }
+    
+    if (downloadBtn) {
+      downloadBtn.disabled = false;
+      console.log('12. Download button enabled');
+    }
+    
+    console.log('=== BACKGROUND REMOVAL SUCCESSFUL ===');
+    
+  } catch (error) {
+    console.error('=== BACKGROUND REMOVAL FAILED ===');
+    console.error('Error details:', error);
+    console.error('Error message:', error.message);
+    
+    // Check if it's a network error
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      alert('Network error. Please check your internet connection.');
+    } 
+    // Check for specific API errors
+    else if (error.message.includes('401')) {
+      alert('Invalid API key. Please check your Remove.bg API key.');
+    } else if (error.message.includes('402')) {
+      alert('No API credits remaining. Check your Remove.bg account.');
+    } else if (error.message.includes('400')) {
+      alert('Invalid image file. Please try a different image.');
+    } else if (error.message.includes('413')) {
+      alert('Image file is too large. Maximum size is 12MB.');
+    } else if (error.message.includes('422')) {
+      alert('Unable to process this image. Try a different one.');
+    } else {
+      alert('Failed to remove background: ' + error.message);
+    }
+  } finally {
+    if (loadingSpinner) loadingSpinner.style.display = 'none';
+    if (removeBgBtn) removeBgBtn.disabled = false;
+    console.log('=== PROCESS COMPLETED ===');
+  }
+}
+
+function downloadResult() {
+  if (!processedImageUrl) return;
+  
+  const link = document.createElement('a');
+  link.href = processedImageUrl;
+  link.download = 'background-removed.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function resetBgRemover() {
+  currentImage = null;
+  if (processedImageUrl) {
+    URL.revokeObjectURL(processedImageUrl);
+    processedImageUrl = null;
+  }
+  
+  const originalPreview = document.getElementById('originalPreview');
+  const resultPreview = document.getElementById('resultPreview');
+  const removeBgBtn = document.getElementById('removeBgBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const imageInput = document.getElementById('imageInput');
+  
+  if (originalPreview) originalPreview.innerHTML = '<p>No image selected</p>';
+  if (resultPreview) resultPreview.innerHTML = '<p>Result will appear here</p>';
+  if (removeBgBtn) removeBgBtn.disabled = true;
+  if (downloadBtn) downloadBtn.disabled = true;
+  if (imageInput) imageInput.value = '';
+}
+
+
 // Timer event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Timer functionality
@@ -768,6 +1050,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadQuickLinks();
     loadSavedQuotes();
     getRandomQuote();
+    initBackgroundRemover();
     
     // Set initial state based on screen size
     if (window.innerWidth > 768) {
@@ -819,4 +1102,5 @@ window.addEventListener('resize', function() {
         // Clear search results on resize
         hideSearchResults();
     }, 100);
+
 });

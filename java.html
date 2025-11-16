@@ -97,6 +97,12 @@
             </button>
           </li>
           <li>
+            <button class="nav-item" data-section="bg-remover">
+              <span aria-hidden="true">🖼️</span>
+              <span>Background Remover</span>
+            </button>
+          </li>
+          <li>
             <button class="nav-item" data-section="quiz-maker">
               <span aria-hidden="true">❓</span>
               <span>Quiz Maker</span>
@@ -277,6 +283,53 @@
           <div id="savedQuotesList">
             <!-- Saved quotes will appear here -->
           </div>
+        </div>
+      </div>
+    </section>
+    <!--Bgremover-->
+    <!-- Background Remover Section -->
+    <section class="content-section" id="bg-remover" aria-labelledby="bg-remover-heading">
+      <div class="section-header">
+        <h1 id="bg-remover-heading">Background Remover</h1>
+        <p>Remove backgrounds from your images instantly</p>
+      </div>
+      
+      <div class="bg-remover-container">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-content">
+            <span class="upload-icon">📁</span>
+            <h3>Drop your image here</h3>
+            <p>or click to browse</p>
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <button class="btn-primary" id="selectImageBtn">Select Image</button>
+          </div>
+        </div>
+        
+        <div class="image-preview-container">
+          <div class="preview-box">
+            <h4>Original Image</h4>
+            <div class="image-preview" id="originalPreview">
+              <p>No image selected</p>
+            </div>
+          </div>
+          
+          <div class="preview-box">
+            <h4>Background Removed</h4>
+            <div class="image-preview" id="resultPreview">
+              <p>Result will appear here</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn-primary" id="removeBgBtn" disabled>Remove Background</button>
+          <button class="btn-secondary" id="downloadBtn" disabled>Download Result</button>
+          <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+          <div class="spinner"></div>
+          <p>Removing background... This may take a few seconds.</p>
         </div>
       </div>
     </section>
