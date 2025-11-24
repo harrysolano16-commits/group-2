@@ -8,7 +8,8 @@
   <meta name="keywords" content="study, productivity, timer, todo, flashcards">
   <meta name="author" content="Your Name">
   <link rel="stylesheet" href="cssngjava.css">
-  <script src="scriptngjava.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="scriptngjava.js"></script>
 </head>
 <body>
   <!-- Top Navigation Bar -->
@@ -32,11 +33,18 @@
         <button class="search_icon_mobile" id="searchmobiletoggle" aria-label="Open search">🔍</button>
       </div>
       
-      <div class="nav-right">
-        <button class="nav-icon" id="notificationsBtn" aria-label="Notifications">🔔</button>
-        <button class="nav-icon" id="profileBtn" aria-label="Profile">👤</button>
-        <button class="nav-icon" id="settingsBtn" aria-label="Settings">⚙️</button>
-      </div>
+        <div class="nav-right">
+      <!-- Auth Buttons -->
+          <div class="auth-buttons">
+            <button class="btn-secondary" id="loginBtn">Login</button>
+            <button class="btn-primary" id="signupBtn">Sign Up</button>
+          </div>
+      
+      <!-- Existing Icons -->
+          <button class="nav-icon" id="notificationsBtn" aria-label="Notifications">🔔</button>
+          <button class="nav-icon" id="profileBtn" aria-label="Profile">👤</button>
+          <button class="nav-icon" id="settingsBtn" aria-label="Settings">⚙️</button>
+        </div>
     </nav>
   </header>
 
@@ -387,5 +395,35 @@
     <p>Loading...</p>
   </div>
 
+  <div class="modal" id="authModal" role="dialog" aria-hidden="true">
+    <div class="modal-content" role="document" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Welcome to StudySync</h3>
+            <button class="close-modal" id="closeAuthModal">×</button>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Login</button>
+            <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        
+        <form id="authForm">
+            <div id="login-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+            </div>
+            
+            <div id="signup-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password (min. 6 characters)" required>
+                <button type="submit" class="btn-primary" style="width: 100%;">Sign Up</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </body>
+
+
 </html>

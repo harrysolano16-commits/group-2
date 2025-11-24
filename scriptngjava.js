@@ -1,10 +1,58 @@
-// Sidebar Functionality
+const supabaseUrl = 'https://ptkofufzalqzywbyypvq.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0a29mdWZ6YWxxenl3Ynl5cHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODI0MzksImV4cCI6MjA3OTU1ODQzOX0.89SH7XUmv4MKEFQZRq2Hvp2Z6H03wrTap1k_FmV9E9U';
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const mainContent = document.getElementById('mainContent');
 const searchInput = document.querySelector('.search-bar input');
 const searchMobileToggle = document.getElementById('searchmobiletoggle');
 const searchBar = document.querySelector('.search-bar');
+
+function showNotification(message, type = 'info') {
+    // Create a simple notification system
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        background: ${type === 'error' ? '#f56565' : '#4299e1'};
+        color: white;
+        border-radius: 8px;
+        z-index: 10000;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+async function testConnection() {
+    try {
+        const { data, error } = await supabaseClient.from('tasks').select('*').limit(1);
+        
+        if (error) {
+            console.error('Supabase connection failed:', error);
+            // Show user-friendly error message
+            showNotification('Database connection failed', 'error');
+            return false;
+        }
+        
+        console.log('✅ Supabase connected successfully!', data);
+        return true;
+    } catch (error) {
+        console.error('Connection test failed:', error);
+        showNotification('Connection test failed', 'error');
+        return false;
+    }
+}
 
 // Check if elements exist to prevent errors
 if (!sidebar || !sidebarToggle || !mainContent) {
@@ -131,7 +179,7 @@ function resetTimer() {
     timerMinutes = parseInt(document.getElementById('workDuration')?.value || 25);
     timerSeconds = 0;
     updateTimerDisplay();
-    const statusDisplay = document.querySelector('timer-status');
+    const statusDisplay = document.querySelector('.timer-status');
     if (statusDisplay) statusDisplay.textContent = 'Ready to focus! 🎯';
 }
 
@@ -280,9 +328,17 @@ let quickLinks = [
 ];
 
 function openAddLinkModal() {
+    console.log('🔍 DEBUG: openAddLinkModal called');
     const modal = document.getElementById('addLinkModal');
-    modal.style.display = 'flex';
-    document.getElementById('linkName').focus();
+    console.log('🔍 DEBUG: Modal found:', modal);
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        console.log('🔍 DEBUG: Modal display set to flex');
+        document.getElementById('linkName')?.focus();
+    } else {
+        console.log('❌ DEBUG: Modal not found!');
+    }
 }
 
 function closeAddLinkModal() {
@@ -293,44 +349,66 @@ function closeAddLinkModal() {
 
 function addLink(event) {
     event.preventDefault();
+    console.log('🔍 DEBUG: addLink function STARTED');
     
-    const name = document.getElementById('linkName').value.trim();
-    const url = document.getElementById('linkUrl').value.trim();
+    const nameInput = document.getElementById('linkName');
+    const urlInput = document.getElementById('linkUrl');
     
-    if (!name || !url) return;
+    const name = nameInput.value.trim();
+    let url = urlInput.value.trim();
     
-    // Add http:// if missing
-    let formattedUrl = url;
+    console.log('🔍 DEBUG: Raw input values - Name:', name, 'URL:', url);
+    
+    if (!name || !url) {
+        console.log('❌ DEBUG: Validation failed - empty fields');
+        showNotification('Please fill in both name and URL', 'error');
+        return;
+    }
+    
+    console.log('✅ DEBUG: Validation passed');
+    
+    // === ADD DEBUG LINES HERE ===
+    console.log('🔍 DEBUG: Before cleanup:', url);
+    let formattedUrl = url.replace(/\/+$/, '');
+    console.log('🔍 DEBUG: After removing slashes:', formattedUrl);
+    
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
         formattedUrl = 'https://' + formattedUrl;
+        console.log('🔍 DEBUG: After adding https:', formattedUrl);
     }
+    console.log('🔍 DEBUG: Final URL:', formattedUrl);
+    // === END DEBUG LINES ===
     
     const newLink = {
         name,
         url: formattedUrl
     };
     
+    console.log('🔍 DEBUG: New link object:', newLink);
+    
     quickLinks.push(newLink);
     saveQuickLinks();
     renderQuickLinks();
     closeAddLinkModal();
+    
+    console.log('✅ DEBUG: Link added successfully!');
+    showNotification('Link added successfully!', 'success');
 }
 
 function renderQuickLinks() {
     const linksGrid = document.querySelector('.links-grid');
     const linksGridFull = document.getElementById('linksGridFull');
-    
-    // Render dashboard links - using <a> tags that open in new tabs
+
     if (linksGrid) {
         linksGrid.innerHTML = quickLinks.map(link => `
             <a href="${link.url}" target="_blank" class="link-item">
                 ${link.name}
             </a>
         `).join('') + '<button class="link-item" id="addLinkBtn">+ Add Link</button>';
-        
-        // Reattach event listener for the Add Link button
-        document.getElementById('addLinkBtn').addEventListener('click', openAddLinkModal);
+
+
     }
+
     
     // Render full links view
     if (linksGridFull) {
@@ -339,10 +417,9 @@ function renderQuickLinks() {
                 ${link.name}
             </a>
         `).join('') + '<button class="link-item" id="addLinkFullBtn">+ Add Link</button>';
-        
-        // Reattach event listener for full view
-        document.getElementById('addLinkFullBtn')?.addEventListener('click', openAddLinkModal);
     }
+    
+    console.log('🔍 DEBUG: Quick links rendered');
 }
 
 function saveQuickLinks() {
@@ -372,12 +449,31 @@ const quotes = [
 let savedQuotes = [];
 
 function getRandomQuote() {
+    console.log('New Quote button clicked');
+    
+    // Use local quotes only (more reliable)
     const randomIndex = Math.floor(Math.random() * quotes.length);
+    const newQuote = `"${quotes[randomIndex]}"`;
+    
+    console.log('Selected quote:', newQuote);
+    
+    // Update both quote displays
     const quoteElement = document.getElementById('currentQuote');
     const quoteElementFull = document.getElementById('currentQuoteFull');
     
-    if (quoteElement) quoteElement.textContent = `"${quotes[randomIndex]}"`;
-    if (quoteElementFull) quoteElementFull.textContent = `"${quotes[randomIndex]}"`;
+    if (quoteElement) {
+        quoteElement.textContent = newQuote;
+        console.log('Updated dashboard quote');
+    } else {
+        console.warn('currentQuote element not found');
+    }
+    
+    if (quoteElementFull) {
+        quoteElementFull.textContent = newQuote;
+        console.log('Updated full page quote');
+    } else {
+        console.warn('currentQuoteFull element not found');
+    }
 }
 
 function saveCurrentQuote() {
@@ -633,85 +729,7 @@ function navigateToSection(sectionId) {
     }
 }
 
-// Event Listeners
 
-// Sidebar toggle
-sidebarToggle.addEventListener('click', toggleSidebar);
-
-// Close sidebar when clicking overlay
-overlay.addEventListener('click', function() {
-    sidebar.classList.remove('active');
-    overlay.style.display = 'none';
-    document.body.style.overflow = '';
-});
-
-// Close sidebar when clicking on a nav item (mobile)
-document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', function() {
-        const section = this.dataset.section;
-        navigateToSection(section);
-        
-        if (window.innerWidth <= 768) {
-            sidebar.classList.remove('active');
-            overlay.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    });
-});
-
-// Mobile search toggle
-searchMobileToggle.addEventListener('click', function() {
-    if (window.innerWidth <= 768) {
-        if (isMobileSearchActive) {
-            deactivateMobileSearch();
-        } else {
-            activateMobileSearch();
-        }
-    }
-});
-
-// Close search when clicking backdrop
-searchBackdrop.addEventListener('click', deactivateMobileSearch);
-
-// Search input events
-searchInput.addEventListener('input', function(e) {
-    performSearch(e.target.value);
-});
-
-searchInput.addEventListener('focus', function() {
-    if (this.value.trim() && window.innerWidth > 768) {
-        performSearch(this.value);
-    }
-});
-
-// Close search results when clicking outside (desktop)
-document.addEventListener('click', function(e) {
-    if (window.innerWidth > 768) {
-        if (!searchBar.contains(e.target) && !searchMobileToggle.contains(e.target)) {
-            hideSearchResults();
-        }
-    }
-});
-
-// Keyboard events
-searchInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        const firstResult = document.querySelector('.search-result-item');
-        if (firstResult && !firstResult.classList.contains('no-results')) {
-            firstResult.click();
-        }
-    }
-    
-    if (e.key === 'Escape') {
-        if (window.innerWidth <= 768 && isMobileSearchActive) {
-            deactivateMobileSearch();
-        } else {
-            hideSearchResults();
-            this.blur();
-        }
-    }
-});
 
 // Background Remover Functionality
 let currentImage = null;
@@ -755,8 +773,7 @@ const BG_REMOVER_API = {
   }
 };
 
-// Initialize background remover
-// Initialize background remover
+
 function initBackgroundRemover() {
   const uploadArea = document.getElementById('uploadArea');
   const imageInput = document.getElementById('imageInput');
@@ -991,36 +1008,243 @@ function resetBgRemover() {
   if (imageInput) imageInput.value = '';
 }
 
+// Event Listeners
+sidebarToggle.addEventListener('click', toggleSidebar);
 
-// Timer event listeners
+// Close sidebar when clicking overlay
+overlay.addEventListener('click', function() {
+    sidebar.classList.remove('active');
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+});
+
+// Close sidebar when clicking on a nav item (mobile)
+document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const section = this.dataset.section;
+        navigateToSection(section);
+        
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('active');
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+});
+
+// Mobile search toggle
+searchMobileToggle.addEventListener('click', function() {
+    if (window.innerWidth <= 768) {
+        if (isMobileSearchActive) {
+            deactivateMobileSearch();
+        } else {
+            activateMobileSearch();
+        }
+    }
+});
+
+// Close search when clicking backdrop
+searchBackdrop.addEventListener('click', deactivateMobileSearch);
+
+// Search input events
+searchInput.addEventListener('input', function(e) {
+    performSearch(e.target.value);
+});
+
+searchInput.addEventListener('focus', function() {
+    if (this.value.trim() && window.innerWidth > 768) {
+        performSearch(this.value);
+    }
+});
+
+// Close search results when clicking outside (desktop)
+document.addEventListener('click', function(e) {
+    if (window.innerWidth > 768) {
+        if (!searchBar.contains(e.target) && !searchMobileToggle.contains(e.target)) {
+            hideSearchResults();
+        }
+    }
+});
+
+// Keyboard events
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstResult = document.querySelector('.search-result-item');
+        if (firstResult && !firstResult.classList.contains('no-results')) {
+            firstResult.click();
+        }
+    }
+    
+    if (e.key === 'Escape') {
+        if (window.innerWidth <= 768 && isMobileSearchActive) {
+            deactivateMobileSearch();
+        } else {
+            hideSearchResults();
+            this.blur();
+        }
+    }
+});
+
+let currentAuthTab = 'login';
+
+function openAuthModal() {
+    console.log('🔍 DEBUG: Opening auth modal');
+    const modal = document.getElementById('authModal');
+    modal.style.display = 'flex';
+}
+
+function closeAuthModal() {
+    console.log('🔍 DEBUG: Closing auth modal');
+    const modal = document.getElementById('authModal');
+    modal.style.display = 'none';
+    document.getElementById('authForm').reset();
+}
+
+async function handleAuth(event) {
+    event.preventDefault();
+    console.log('🔍 DEBUG: Auth form submitted');
+    
+    if (currentAuthTab === 'login') {
+        await loginUser();
+    } else {
+        await signUpUser();
+    }
+}
+
+async function loginUser() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    console.log('🔍 DEBUG: Attempting login for:', email);
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email,
+            password
+        });
+        
+        if (error) throw error;
+        
+        console.log('✅ User logged in:', data.user);
+        closeAuthModal();
+        showNotification('Welcome back!', 'success');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
+async function signUpUser() {
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    
+    console.log('🔍 DEBUG: Attempting signup for:', email);
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email,
+            password
+        });
+        
+        if (error) throw error;
+        
+        console.log('✅ User signed up:', data.user);
+        showNotification('Account created! Please check your email for verification.', 'success');
+        closeAuthModal();
+        
+    } catch (error) {
+        console.error('Sign up error:', error);
+        showNotification(error.message, 'error');
+    }
+}
+
+async function logoutUser() {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+        console.error('Logout error:', error);
+        showNotification('Logout failed', 'error');
+    } else {
+        showNotification('Logged out successfully', 'info');
+    }
+}
+
+// Auth state listener
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log('🔍 Auth event:', event, 'User:', session?.user);
+    if (session) {
+        // User signed in
+        console.log('✅ User is logged in:', session.user.email);
+        showNotification('Welcome to StudySync!', 'success');
+    } else {
+        // User signed out
+        console.log('✅ User logged out');
+    }
+});
+
+
+// Main DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Timer functionality
-    document.getElementById('startTimer')?.addEventListener('click', startTimer);
-    document.getElementById('pauseTimer')?.addEventListener('click', pauseTimer);
-    document.getElementById('resetTimer')?.addEventListener('click', resetTimer);
+    console.log('🔍 DEBUG: DOMContentLoaded started');
     
-    document.getElementById('startTimerFull')?.addEventListener('click', startTimer);
-    document.getElementById('pauseTimerFull')?.addEventListener('click', pauseTimer);
-    document.getElementById('resetTimerFull')?.addEventListener('click', resetTimer);
-    
-    // Todo functionality
-    document.getElementById('addTaskBtn')?.addEventListener('click', openAddTaskModal);
-    document.getElementById('addTaskFullBtn')?.addEventListener('click', openAddTaskModal);
-    document.getElementById('cancelTask')?.addEventListener('click', closeAddTaskModal);
-    document.getElementById('closeTaskModal')?.addEventListener('click', closeAddTaskModal);
+    // Use event delegation for ALL buttons
+    document.addEventListener('click', function(e) {
+        console.log('🔍 DEBUG: Click detected on:', e.target.id, e.target.className);
+        
+        // Timer buttons
+        if (e.target.id === 'startTimer' || e.target.id === 'startTimerFull') {
+            console.log('🔍 DEBUG: Start timer clicked');
+            startTimer();
+        }
+        if (e.target.id === 'pauseTimer' || e.target.id === 'pauseTimerFull') {
+            console.log('🔍 DEBUG: Pause timer clicked');
+            pauseTimer();
+        }
+        if (e.target.id === 'resetTimer' || e.target.id === 'resetTimerFull') {
+            console.log('🔍 DEBUG: Reset timer clicked');
+            resetTimer();
+        }
+        
+        // Todo buttons
+        if (e.target.id === 'addTaskBtn' || e.target.id === 'addTaskFullBtn') {
+            console.log('🔍 DEBUG: Add task clicked');
+            openAddTaskModal();
+        }
+        
+        // Quick Links buttons
+        if (e.target.id === 'addLinkBtn' || e.target.id === 'addLinkFullBtn') {
+            console.log('🔍 DEBUG: Add link clicked - ID:', e.target.id);
+            openAddLinkModal();
+        }
+        
+        // Quote buttons
+        if (e.target.id === 'newQuote' || e.target.id === 'newQuoteFull') {
+            console.log('🔍 DEBUG: New quote clicked');
+            getRandomQuote();
+        }
+        if (e.target.id === 'saveQuoteBtn') {
+            console.log('🔍 DEBUG: Save quote clicked');
+            saveCurrentQuote();
+        }
+        
+        // Modal close buttons
+        if (e.target.id === 'cancelTask' || e.target.id === 'closeTaskModal') {
+            console.log('🔍 DEBUG: Close task modal clicked');
+            closeAddTaskModal();
+        }
+        if (e.target.id === 'cancelLink' || e.target.id === 'closeLinkModal') {
+            console.log('🔍 DEBUG: Close link modal clicked');
+            closeAddLinkModal();
+        }
+    });
+
+    // Form submissions
     document.getElementById('taskForm')?.addEventListener('submit', addTask);
-    
-    // Quick Links functionality
-    document.getElementById('addLinkBtn')?.addEventListener('click', openAddLinkModal);
-    document.getElementById('addLinkFullBtn')?.addEventListener('click', openAddLinkModal);
-    document.getElementById('cancelLink')?.addEventListener('click', closeAddLinkModal);
-    document.getElementById('closeLinkModal')?.addEventListener('click', closeAddLinkModal);
-    document.getElementById('linkForm')?.addEventListener('submit', addLink);
-    
-    // Quotes functionality
-    document.getElementById('newQuote')?.addEventListener('click', getRandomQuote);
-    document.getElementById('newQuoteFull')?.addEventListener('click', getRandomQuote);
-    document.getElementById('saveQuoteBtn')?.addEventListener('click', saveCurrentQuote);
+    document.getElementById('linkForm')?.addEventListener('submit', function(e) {
+        console.log('🔍 DEBUG: Link form submit triggered');
+        addLink(e);
+    });
     
     // Todo filters
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1043,8 +1267,36 @@ document.addEventListener('DOMContentLoaded', function() {
             closeAddLinkModal();
         }
     });
+
+    document.getElementById('loginBtn')?.addEventListener('click', openAuthModal);
+    document.getElementById('signupBtn')?.addEventListener('click', openAuthModal);
+    
+    // Auth form submission
+    document.getElementById('authForm')?.addEventListener('submit', handleAuth);
+    
+    // Close auth modal
+    document.getElementById('closeAuthModal')?.addEventListener('click', closeAuthModal);
+    document.getElementById('authModal')?.addEventListener('click', function(e) {
+        if (e.target === this) closeAuthModal();
+    });
+    
+    // Auth tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            currentAuthTab = this.dataset.tab;
+            document.getElementById('login-form').style.display = 
+                currentAuthTab === 'login' ? 'block' : 'none';
+            document.getElementById('signup-form').style.display = 
+                currentAuthTab === 'signup' ? 'block' : 'none';
+        });
+    });
     
     // Initialize displays
+    console.log('🔍 DEBUG: Initializing app...');
+    testConnection();
     updateTimerDisplay();
     loadTasks();
     loadQuickLinks();
@@ -1065,6 +1317,8 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebar.classList.add('collapsed');
         mainContent.style.marginLeft = '60px';
     }
+    
+    console.log('🔍 DEBUG: DOMContentLoaded completed');
 });
 
 // Save sidebar state when toggled (optional enhancement)
