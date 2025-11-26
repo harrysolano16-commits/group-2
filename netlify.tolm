@@ -1,0 +1,5 @@
+[[redirects]]
+from = "/*"
+to = "/java.html"
+status = 200
+
