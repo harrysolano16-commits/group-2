@@ -1,6 +1,4 @@
-const supabaseUrl = 'https://ptkofufzalqzywbyypvq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0a29mdWZ6YWxxenl3Ynl5cHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODI0MzksImV4cCI6MjA3OTU1ODQzOX0.89SH7XUmv4MKEFQZRq2Hvp2Z6H03wrTap1k_FmV9E9U';
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
 const sidebar = document.getElementById('sidebar');
 const sidebarToggle = document.getElementById('sidebarToggle');
 const mainContent = document.getElementById('mainContent');
@@ -34,13 +32,14 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-async function testConnection() {
+// Change this function to accept supabaseClient as parameter
+async function testConnection(supabaseClient) {
     try {
         const { data, error } = await supabaseClient.from('tasks').select('*').limit(1);
         
         if (error) {
             console.error('Supabase connection failed:', error);
-            // Show user-friendly error message
+            
             showNotification('Database connection failed', 'error');
             return false;
         }
@@ -251,7 +250,7 @@ function renderTasks() {
         filteredTasks = tasks.filter(task => task.completed);
     }
     
-    // Render dashboard todo list (only show 5 most recent)
+    // ✅ FIX DASHBOARD TODO LIST (check this part too!)
     if (todoList) {
         const dashboardTasks = filteredTasks.slice(0, 5);
         
@@ -260,7 +259,9 @@ function renderTasks() {
         } else {
             todoList.innerHTML = dashboardTasks.map(task => `
                 <div class="todo-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-task-id="${task.id}">
+                        <!-- EMPTY - NO CHECKMARK TEXT -->
+                    </div>
                     <div class="task-content">
                         <div class="task-text">${task.title}</div>
                         ${task.dueDate ? `<div class="task-due">Due: ${new Date(task.dueDate).toLocaleString()}</div>` : ''}
@@ -270,20 +271,22 @@ function renderTasks() {
         }
     }
     
-    // Render full todo list
+    // ✅ FIX FULL TODO LIST (you already did this part)
     if (todoListFull) {
         if (filteredTasks.length === 0) {
             todoListFull.innerHTML = '<p class="empty-state">No tasks match your filter.</p>';
         } else {
             todoListFull.innerHTML = filteredTasks.map(task => `
                 <div class="todo-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+                    <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-task-id="${task.id}">
+                        <!-- EMPTY - NO CHECKMARK TEXT -->
+                    </div>
                     <div class="task-content">
                         <div class="task-text">${task.title}</div>
                         ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
                         ${task.dueDate ? `<div class="task-due">Due: ${new Date(task.dueDate).toLocaleString()}</div>` : ''}
                     </div>
-                    <button class="btn-secondary" onclick="deleteTask(${task.id})">Delete</button>
+                    <button class="btn-secondary delete-task" data-task-id="${task.id}">Delete</button>
                 </div>
             `).join('');
         }
@@ -1101,9 +1104,87 @@ function closeAuthModal() {
     document.getElementById('authForm').reset();
 }
 
+function validateAuthForm() {
+    const isLogin = currentAuthTab === 'login';
+    const email = document.getElementById(isLogin ? 'loginEmail' : 'signupEmail').value.trim();
+    const password = document.getElementById(isLogin ? 'loginPassword' : 'signupPassword').value.trim();
+    
+    // Clear previous errors
+    clearValidationErrors();
+    
+    let isValid = true;
+    
+    // Email validation
+    if (!email) {
+        showFieldError(isLogin ? 'loginEmail' : 'signupEmail', 'Email is required');
+        isValid = false;
+    } else if (!isValidEmail(email)) {
+        showFieldError(isLogin ? 'loginEmail' : 'signupEmail', 'Please enter a valid email');
+        isValid = false;
+    }
+    
+    // Password validation
+    if (!password) {
+        showFieldError(isLogin ? 'loginPassword' : 'signupPassword', 'Password is required');
+        isValid = false;
+    } else if (!isLogin && password.length < 6) {
+        showFieldError('signupPassword', 'Password must be at least 6 characters');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function showFieldError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.style.borderColor = '#f56565';
+        // Create error message
+        let errorElement = field.parentNode.querySelector('.field-error');
+        if (!errorElement) {
+            errorElement = document.createElement('div');
+            errorElement.className = 'field-error';
+            errorElement.style.cssText = 'color: #f56565; font-size: 0.8rem; margin-top: 5px;';
+            field.parentNode.appendChild(errorElement);
+        }
+        errorElement.textContent = message;
+    }
+}
+
+function clearValidationErrors() {
+    // Clear all field errors
+    document.querySelectorAll('input').forEach(field => {
+        field.style.borderColor = '';
+    });
+    document.querySelectorAll('.field-error').forEach(error => {
+        error.remove();
+    });
+}
+
 async function handleAuth(event) {
     event.preventDefault();
     console.log('🔍 DEBUG: Auth form submitted');
+    
+    // ✅ ADD SIMPLE VALIDATION CHECK
+    const isLogin = currentAuthTab === 'login';
+    const email = document.getElementById(isLogin ? 'loginEmail' : 'signupEmail').value.trim();
+    const password = document.getElementById(isLogin ? 'loginPassword' : 'signupPassword').value.trim();
+    
+    // Basic validation
+    if (!email || !password) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+    }
+    
+    if (!isLogin && password.length < 6) {
+        showNotification('Password must be at least 6 characters', 'error');
+        return;
+    }
     
     if (currentAuthTab === 'login') {
         await loginUser();
@@ -1112,6 +1193,7 @@ async function handleAuth(event) {
     }
 }
 
+
 async function loginUser() {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
@@ -1119,7 +1201,7 @@ async function loginUser() {
     console.log('🔍 DEBUG: Attempting login for:', email);
     
     try {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
+        const { data, error } = await window.supabaseClient.auth.signInWithPassword({
             email,
             password
         });
@@ -1143,7 +1225,7 @@ async function signUpUser() {
     console.log('🔍 DEBUG: Attempting signup for:', email);
     
     try {
-        const { data, error } = await supabaseClient.auth.signUp({
+        const { data, error } = await window.supabaseClient.auth.signUp({
             email,
             password
         });
@@ -1171,24 +1253,46 @@ async function logoutUser() {
 }
 
 // Auth state listener
-supabaseClient.auth.onAuthStateChange((event, session) => {
-    console.log('🔍 Auth event:', event, 'User:', session?.user);
-    if (session) {
-        // User signed in
-        console.log('✅ User is logged in:', session.user.email);
-        showNotification('Welcome to StudySync!', 'success');
-    } else {
-        // User signed out
-        console.log('✅ User logged out');
-    }
-});
 
 
 // Main DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 DEBUG: DOMContentLoaded started');
     
-    // Use event delegation for ALL buttons
+    const supabaseUrl = 'https://ptkofufzalqzywbyypvq.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB0a29mdWZ6YWxxenl3Ynl5cHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5ODI0MzksImV4cCI6MjA3OTU1ODQzOX0.89SH7XUmv4MKEFQZRq2Hvp2Z6H03wrTap1k_FmV9E9U';
+    window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+    window.supabaseClient.auth.onAuthStateChange((event, session) => {
+        console.log('🔍 Auth event:', event, 'User:', session?.user);
+        updateUIForAuthState(session?.user);
+        
+        if (session) {
+            console.log('✅ User is logged in:', session.user.email);
+            showNotification('Welcome to StudySync!', 'success');
+        } else {
+            console.log('✅ User logged out');
+        }
+    });
+
+    function updateUIForAuthState(user) {
+        const authButtons = document.querySelector('.auth-buttons');
+        if (user) {
+            authButtons.innerHTML = `
+                <span style="color: var(--text-secondary); margin-right: 10px;">
+                    👋 ${user.email}
+                </span>
+                <button class="btn-secondary" id="logoutBtn">Logout</button>
+            `;
+        } else {
+            authButtons.innerHTML = `
+                <button class="btn-secondary" id="loginBtn">Login</button>
+                <button class="btn-primary" id="signupBtn">Sign Up</button>
+            `;
+        }
+    }
+
+    // ✅ SINGLE EVENT LISTENER (no nesting)
     document.addEventListener('click', function(e) {
         console.log('🔍 DEBUG: Click detected on:', e.target.id, e.target.className);
         
@@ -1237,6 +1341,35 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('🔍 DEBUG: Close link modal clicked');
             closeAddLinkModal();
         }
+        
+        // Logout button
+        if (e.target.id === 'logoutBtn') {
+            console.log('🔍 DEBUG: Logout clicked');
+            logoutUser();
+        }
+
+        if (e.target.id === 'loginBtn') {
+            console.log('🔍 DEBUG: Login button clicked (dynamic)');
+            openAuthModal();
+        }
+        if (e.target.id === 'signupBtn') {
+            console.log('🔍 DEBUG: Signup button clicked (dynamic)');
+            openAuthModal();
+        }
+
+        // Handle task checkbox clicks
+        if (e.target.classList.contains('task-checkbox')) {
+            const taskId = parseInt(e.target.dataset.taskId);
+            console.log('🔍 DEBUG: Toggle task clicked:', taskId);
+            toggleTask(taskId);
+        }
+        
+        // Handle delete task buttons
+        if (e.target.classList.contains('delete-task')) {
+            const taskId = parseInt(e.target.dataset.taskId);
+            console.log('🔍 DEBUG: Delete task clicked:', taskId);
+            deleteTask(taskId);
+        }
     });
 
     // Form submissions
@@ -1244,6 +1377,11 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('linkForm')?.addEventListener('submit', function(e) {
         console.log('🔍 DEBUG: Link form submit triggered');
         addLink(e);
+    });
+    
+    // Auth form submission
+    document.getElementById('authForm')?.addEventListener('submit', function(e) {
+        handleAuth(e);
     });
     
     // Todo filters
@@ -1267,13 +1405,7 @@ document.addEventListener('DOMContentLoaded', function() {
             closeAddLinkModal();
         }
     });
-
-    document.getElementById('loginBtn')?.addEventListener('click', openAuthModal);
-    document.getElementById('signupBtn')?.addEventListener('click', openAuthModal);
-    
-    // Auth form submission
-    document.getElementById('authForm')?.addEventListener('submit', handleAuth);
-    
+   
     // Close auth modal
     document.getElementById('closeAuthModal')?.addEventListener('click', closeAuthModal);
     document.getElementById('authModal')?.addEventListener('click', function(e) {
@@ -1296,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize displays
     console.log('🔍 DEBUG: Initializing app...');
-    testConnection();
+    testConnection(window.supabaseClient);
     updateTimerDisplay();
     loadTasks();
     loadQuickLinks();
