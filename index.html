@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudySync — Personal Study Dashboard</title>
+  <meta name="description" content="StudySync - Your personal study dashboard with productivity tools">
+  <meta name="keywords" content="study, productivity, timer, todo, flashcards">
+  <meta name="Stick_0" content="Stick_0">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header>
+    <nav class="top-navbar" aria-label="Main navigation">
+      <div class="nav-left">
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="logo">
+          <img src="logo.png" alt="StudySync logo" width="150" height="42">
+        </div>  
+      </div>
+      
+      <div class="nav-center">
+        <div class="search-bar">
+          <input type="text" placeholder="Search tasks and tools..." aria-label="Search">
+        </div>
+        <button class="search_icon_mobile" id="searchmobiletoggle" aria-label="Open search">🔍</button>
+      </div>
+      
+        <div class="nav-right">
+      <!-- Auth Buttons -->
+          <div class="auth-buttons">
+            <button class="btn-secondary" id="loginBtn">Login</button>
+            <button class="btn-primary" id="signupBtn">Sign Up</button>
+          </div>
+      
+      <!-- Existing Icons -->
+          <button class="nav-icon" id="notificationsBtn" aria-label="Notifications">🔔</button>
+          <button class="nav-icon" id="profileBtn" aria-label="Profile">👤</button>
+          <button class="nav-icon" id="settingsBtn" aria-label="Settings">⚙️</button>
+        </div>
+    </nav>
+  </header>
+
+  <!-- Collapsible Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+    <nav class="sidebar-nav" aria-label="App sections">
+      <!-- Core Features Section -->
+      <section class="nav-section" aria-labelledby="core-features-heading">
+        <h3 id="core-features-heading">CORE FEATURES</h3>
+        <ul>
+          <li>
+            <button class="nav-item active" data-section="dashboard" aria-current="page">
+              <span aria-hidden="true">🏠</span>
+              <span>Dashboard</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="todo">
+              <span aria-hidden="true">📝</span>
+              <span>To-Do List</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="timer">
+              <span aria-hidden="true">⏱️</span>
+              <span>Pomodoro Timer</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="links">
+              <span aria-hidden="true">🔗</span>
+              <span>Quick Links</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="quotes">
+              <span aria-hidden="true">💭</span>
+              <span>Motivational Quotes</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Tools Section -->
+      <section class="nav-section" aria-labelledby="tools-heading">
+        <h3 id="tools-heading">TOOLS</h3>
+        <ul>
+          <li>
+            <button class="nav-item" data-section="pdf-converter">
+              <span aria-hidden="true">📄</span>
+              <span>PDF Converter</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="flashcards">
+              <span aria-hidden="true">🃏</span>
+              <span>Flashcard Generator</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="bg-remover">
+              <span aria-hidden="true">🖼️</span>
+              <span>Background Remover</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="quiz-maker">
+              <span aria-hidden="true">❓</span>
+              <span>Quiz Maker</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="pdf-combiner">
+              <span aria-hidden="true">🔗</span>
+              <span>PDF Combiner</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="pdf-summarizer">
+              <span aria-hidden="true">📊</span>
+              <span>PDF Summarizer</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Settings Section -->
+      <section class="nav-section" aria-labelledby="settings-heading">
+        <h3 id="settings-heading">SETTINGS</h3>
+        <ul>
+          <li>
+            <button class="nav-item" data-section="theme">
+              <span aria-hidden="true">🎨</span>
+              <span>Theme Settings</span>
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" data-section="account">
+              <span aria-hidden="true">👤</span>
+              <span>Account</span>
+            </button>
+          </li>
+        </ul>
+      </section>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content" id="mainContent">
+    
+    <!-- Dashboard Section (Default View) -->
+    <section class="content-section active" id="dashboard" aria-labelledby="dashboard-heading">
+      <div class="dashboard-grid">
+        <!-- Timer Card -->
+        <article class="card timer-card">
+          <h2>Pomodoro Timer</h2>
+          <div class="timer-display" aria-live="polite">
+            <span id="timerMinutes">25</span>:<span id="timerSeconds">00</span>
+          </div>
+          <div class="timer-controls">
+            <button class="btn-primary" id="startTimer">Start</button>
+            <button class="btn-secondary" id="pauseTimer">Pause</button>
+            <button class="btn-secondary" id="resetTimer">Reset</button>
+          </div>
+          <div class="timer-status" aria-live="polite">Ready to focus! 🎯</div>
+        </article>
+
+        <!-- To-Do List Card -->
+        <article class="card todo-card">
+          <div class="card-header">
+            <h2>To-Do List</h2>
+            <button class="btn-primary" id="addTaskBtn">+ Add Task</button>
+          </div>
+          <div class="todo-list" id="todoList" aria-live="polite">
+            <!-- Tasks will be added here dynamically -->
+            <p class="empty-state">No tasks yet. Add your first task!</p>
+          </div>
+        </article>
+
+        <!-- Quick Links Card -->
+        <article class="card links-card">
+          <h2>Quick Links</h2>
+          <div class="links-grid">
+            <button class="link-item">Google Drive</button>
+            <button class="link-item">University Portal</button>
+            <button class="link-item">YouTube</button>
+            <button class="link-item">Spotify</button>
+            <button class="link-item">Notion</button>
+            <button class="link-item" id="addLinkBtn">+ Add Link</button>
+          </div>
+        </article>
+
+        <!-- Motivational Quotes Card -->
+        <article class="card quotes-card">
+          <h2>Daily Motivation</h2>
+          <div class="quote-content">
+            <blockquote>
+              <p id="currentQuote">"The secret of getting ahead is getting started." - Mark Twain</p>
+            </blockquote>
+            <button class="btn-secondary" id="newQuote">New Quote</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- To-Do List Section -->
+    <section class="content-section" id="todo" aria-labelledby="todo-heading">
+      <div class="section-header">
+        <h1 id="todo-heading">To-Do List</h1>
+        <p>Manage your tasks and assignments</p>
+      </div>
+      <div class="todo-full-view">
+        <div class="todo-actions">
+          <button class="btn-primary" id="addTaskFullBtn">+ Add New Task</button>
+          <div class="todo-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+          </div>
+        </div>
+        <div class="todo-list-full" id="todoListFull">
+          <!-- Full todo list will be loaded here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Timer Section -->
+    <section class="content-section" id="timer" aria-labelledby="timer-heading">
+      <div class="section-header">
+        <h1 id="timer-heading">Pomodoro Timer</h1>
+        <p>Focus on your studies with timed sessions</p>
+      </div>
+      <div class="timer-full-view">
+        <div class="timer-display-full">
+          <span id="timerMinutesFull">25</span>:<span id="timerSecondsFull">00</span>
+        </div>
+        <div class="timer-controls-full">
+          <button class="btn-primary" id="startTimerFull">Start</button>
+          <button class="btn-secondary" id="pauseTimerFull">Pause</button>
+          <button class="btn-secondary" id="resetTimerFull">Reset</button>
+        </div>
+        <div class="timer-settings">
+          <label for="workDuration">Work Duration (minutes):</label>
+          <input type="number" id="workDuration" min="5" max="60" value="25">
+          <label for="breakDuration">Break Duration (minutes):</label>
+          <input type="number" id="breakDuration" min="1" max="30" value="5">
+        </div>
+        <div class="timer-status-full" aria-live="polite">Ready to focus! 🎯</div>
+      </div>
+    </section>
+
+    <!-- Quick Links Section -->
+    <section class="content-section" id="links" aria-labelledby="links-heading">
+      <div class="section-header">
+        <h1 id="links-heading">Quick Links</h1>
+        <p>Access your frequently used resources</p>
+      </div>
+      <div class="links-full-view">
+        <button class="btn-primary" id="addLinkFullBtn">+ Add New Link</button>
+        <div class="links-grid-full" id="linksGridFull">
+          <!-- Full links grid will be loaded here -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Motivational Quotes Section -->
+    <section class="content-section" id="quotes" aria-labelledby="quotes-heading">
+      <div class="section-header">
+        <h1 id="quotes-heading">Motivational Quotes</h1>
+        <p>Get inspired with daily motivation</p>
+      </div>
+      <div class="quotes-full-view">
+        <div class="quote-display-full">
+          <blockquote>
+            <p id="currentQuoteFull">"The secret of getting ahead is getting started." - Mark Twain</p>
+          </blockquote>
+        </div>
+        <div class="quote-actions">
+          <button class="btn-primary" id="newQuoteFull">New Quote</button>
+          <button class="btn-secondary" id="saveQuoteBtn">Save Quote</button>
+        </div>
+        <div class="saved-quotes">
+          <h3>Saved Quotes</h3>
+          <div id="savedQuotesList">
+            <!-- Saved quotes will appear here -->
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--Bgremover-->
+    <!-- Background Remover Section -->
+    <section class="content-section" id="bg-remover" aria-labelledby="bg-remover-heading">
+      <div class="section-header">
+        <h1 id="bg-remover-heading">Background Remover</h1>
+        <p>Remove backgrounds from your images instantly</p>
+      </div>
+      
+      <div class="bg-remover-container">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-content">
+            <span class="upload-icon">📁</span>
+            <h3>Drop your image here</h3>
+            <p>or click to browse</p>
+            <input type="file" id="imageInput" accept="image/*" hidden>
+            <button class="btn-primary" id="selectImageBtn">Select Image</button>
+          </div>
+        </div>
+        
+        <div class="image-preview-container">
+          <div class="preview-box">
+            <h4>Original Image</h4>
+            <div class="image-preview" id="originalPreview">
+              <p>No image selected</p>
+            </div>
+          </div>
+          
+          <div class="preview-box">
+            <h4>Background Removed</h4>
+            <div class="image-preview" id="resultPreview">
+              <p>Result will appear here</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="btn-primary" id="removeBgBtn" disabled>Remove Background</button>
+          <button class="btn-secondary" id="downloadBtn" disabled>Download Result</button>
+          <button class="btn-secondary" id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+          <div class="spinner"></div>
+          <p>Removing background... This may take a few seconds.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add Task Modal -->
+  <div class="modal" id="addTaskModal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="modal-title">Add New Task</h3>
+        <button class="close-modal" id="closeTaskModal" aria-label="Close modal">×</button>
+      </div>
+      <form id="taskForm">
+        <label for="taskTitle" class="sr-only">Task title</label>
+        <input type="text" id="taskTitle" placeholder="Task title" required>
+        
+        <label for="taskDescription" class="sr-only">Task description</label>
+        <textarea id="taskDescription" placeholder="Description (optional)"></textarea>
+        
+        <label for="taskDueDate">Due date</label>
+        <input type="datetime-local" id="taskDueDate">
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelTask">Cancel</button>
+          <button type="submit" class="btn-primary">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Link Modal -->
+  <div class="modal" id="addLinkModal" role="dialog" aria-labelledby="link-modal-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="link-modal-title">Add New Link</h3>
+        <button class="close-modal" id="closeLinkModal" aria-label="Close modal">×</button>
+      </div>
+      <form id="linkForm">
+        <label for="linkName">Link Name</label>
+        <input type="text" id="linkName" placeholder="e.g., Google Drive" required>
+        
+        <label for="linkUrl">URL</label>
+        <input type="url" id="linkUrl" placeholder="https://example.com" required>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelLink">Cancel</button>
+          <button type="submit" class="btn-primary">Add Link</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div id="loading" style="display: none;">
+    <p>Loading...</p>
+  </div>
+
+  <div class="modal" id="authModal" role="dialog" aria-hidden="true">
+    <div class="modal-content" role="document" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Welcome to StudySync</h3>
+            <button class="close-modal" id="closeAuthModal">×</button>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Login</button>
+            <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+        
+        <form id="authForm" novalidate>
+            <div id="login-form">
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+            </div>
+            
+            <div id="signup-form" style="display: none;">
+                <input type="email" id="signupEmail" placeholder="Email" required>
+                <input type="password" id="signupPassword" placeholder="Password (min. 6 characters)" required>
+                <button type="submit" class="btn-primary" style="width: 100%;">Sign Up</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+
+
+</html>
