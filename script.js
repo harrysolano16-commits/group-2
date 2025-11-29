@@ -212,8 +212,14 @@ function closeAddTaskModal() {
     document.getElementById('taskForm').reset();
 }
 
-function addTask(event) {
+async function addTask(event) {
     event.preventDefault();
+    
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    if (!user) {
+        showNotification('Please log in to add tasks', 'error');
+        return;
+    }
     
     const title = document.getElementById('taskTitle').value.trim();
     const description = document.getElementById('taskDescription').value.trim();
@@ -221,19 +227,33 @@ function addTask(event) {
     
     if (!title) return;
     
-    const newTask = {
-        id: Date.now(),
-        title,
-        description,
-        dueDate,
-        completed: false
-    };
-    
-    tasks.push(newTask);
-    saveTasks();
-    renderTasks();
-    closeAddTaskModal();
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('tasks')
+            .insert([
+                {
+                    user_id: user.id,
+                    title,
+                    description,
+                    due_date: dueDate || null,
+                    completed: false
+                }
+            ])
+            .select();
+
+        if (error) throw error;
+
+        tasks.unshift(data[0]);
+        renderTasks();
+        closeAddTaskModal();
+        showNotification('Task added successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error adding task:', error);
+        showNotification('Failed to add task', 'error');
+    }
 }
+
 
 function renderTasks() {
     const todoList = document.getElementById('todoList');
@@ -293,18 +313,42 @@ function renderTasks() {
     }
 }
 
-function toggleTask(taskId) {
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
-        task.completed = !task.completed;
-        renderTasks();
+async function toggleTask(taskId) {
+    try {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const { error } = await window.supabaseClient
+            .from('tasks')
+            .update({ completed: !task.completed })
+            .eq('id', taskId);
+
+        if (error) throw error;
+          task.completed = !task.completed;
+          
+          renderTasks();
+    
+    } catch (error) {
+        console.error('Error updating task:', error);
     }
 }
 
-function deleteTask(taskId) {
-    tasks = tasks.filter(t => t.id !== taskId);
-    saveTasks();
-    renderTasks();
+async function deleteTask(taskId) {
+    try {
+        const { error } = await window.supabaseClient
+            .from('tasks')
+            .delete()
+            .eq('id', taskId);
+
+        if (error) throw error;
+
+        tasks = tasks.filter(t => t.id !== taskId);
+        renderTasks();
+        showNotification('Task deleted', 'success');
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        showNotification('Failed to delete task', 'error');
+    }
 }
 
 // Local Storage for data persistence
@@ -312,10 +356,28 @@ function saveTasks() {
     localStorage.setItem('studysync-tasks', JSON.stringify(tasks));
 }
 
-function loadTasks() {
-    const saved = localStorage.getItem('studysync-tasks');
-    if (saved) {
-        tasks = JSON.parse(saved);
+async function loadTasks() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            tasks = []; // Clear tasks array
+            renderTasks(); // Update UI to show empty state
+            return;
+        }
+
+        const { data, error } = await window.supabaseClient
+            .from('tasks')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        tasks = data || [];
+        renderTasks();
+    } catch (error) {
+        console.error('Error loading tasks:', error);
+        tasks = [];
         renderTasks();
     }
 }
@@ -349,89 +411,151 @@ function closeAddLinkModal() {
     document.getElementById('linkForm').reset();
 }
 
-function addLink(event) {
+async function addLink(event) {
     event.preventDefault();
-    console.log('🔍 DEBUG: addLink function STARTED');
     
-    const nameInput = document.getElementById('linkName');
-    const urlInput = document.getElementById('linkUrl');
+    const { data: { user } } = await window.supabaseClient.auth.getUser();
+    if (!user) {
+        showNotification('Please log in to add links', 'error');
+        return;
+    }
     
-    const name = nameInput.value.trim();
-    let url = urlInput.value.trim();
-    
-    console.log('🔍 DEBUG: Raw input values - Name:', name, 'URL:', url);
+    const name = document.getElementById('linkName').value.trim();
+    let url = document.getElementById('linkUrl').value.trim();
     
     if (!name || !url) {
-        console.log('❌ DEBUG: Validation failed - empty fields');
+
+
         showNotification('Please fill in both name and URL', 'error');
         return;
     }
     
-    console.log('✅ DEBUG: Validation passed');
-    
-    // === ADD DEBUG LINES HERE ===
-    console.log('🔍 DEBUG: Before cleanup:', url);
+    // Format URL
     let formattedUrl = url.replace(/\/+$/, '');
-    console.log('🔍 DEBUG: After removing slashes:', formattedUrl);
-    
+
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
         formattedUrl = 'https://' + formattedUrl;
-        console.log('🔍 DEBUG: After adding https:', formattedUrl);
     }
-    console.log('🔍 DEBUG: Final URL:', formattedUrl);
-    // === END DEBUG LINES ===
     
-    const newLink = {
-        name,
-        url: formattedUrl
-    };
-    
-    console.log('🔍 DEBUG: New link object:', newLink);
-    
-    quickLinks.push(newLink);
-    saveQuickLinks();
-    renderQuickLinks();
-    closeAddLinkModal();
-    
-    console.log('✅ DEBUG: Link added successfully!');
-    showNotification('Link added successfully!', 'success');
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('quick_links')
+            .insert([
+                {
+                    user_id: user.id,
+                    name,
+                    url: formattedUrl
+                }
+            ])
+            .select();
+
+        if (error) throw error;
+
+        quickLinks.unshift(data[0]);
+        renderQuickLinks();
+        closeAddLinkModal();
+        showNotification('Link added successfully!', 'success');
+        
+    } catch (error) {
+        console.error('Error adding link:', error);
+        showNotification('Failed to add link', 'error');
+    }
 }
 
 function renderQuickLinks() {
     const linksGrid = document.querySelector('.links-grid');
     const linksGridFull = document.getElementById('linksGridFull');
 
+    // Dashboard view (compact)
     if (linksGrid) {
         linksGrid.innerHTML = quickLinks.map(link => `
-            <a href="${link.url}" target="_blank" class="link-item">
-                ${link.name}
-            </a>
+            <div class="link-item-container">
+                <a href="${link.url}" target="_blank" class="link-item">
+                    ${link.name}
+                </a>
+                <button class="delete-link-btn" data-link-id="${link.id}" title="Delete link">
+                    🗑️
+                </button>
+            </div>
         `).join('') + '<button class="link-item" id="addLinkBtn">+ Add Link</button>';
-
-
+       
     }
 
-    
-    // Render full links view
+    // Full view
     if (linksGridFull) {
         linksGridFull.innerHTML = quickLinks.map(link => `
-            <a href="${link.url}" target="_blank" class="link-item">
-                ${link.name}
-            </a>
+            <div class="link-item-container">
+                <a href="${link.url}" target="_blank" class="link-item">
+                    ${link.name}
+                </a>
+                <button class="delete-link-btn" data-link-id="${link.id}" title="Delete link">
+                    🗑️
+                </button>
+            </div>
         `).join('') + '<button class="link-item" id="addLinkFullBtn">+ Add Link</button>';
     }
     
-    console.log('🔍 DEBUG: Quick links rendered');
+    console.log('🔍 DEBUG: Quick links rendered with delete buttons');
 }
 
-function saveQuickLinks() {
-    localStorage.setItem('studysync-links', JSON.stringify(quickLinks));
+// ========== DELETE LINK FUNCTION ==========
+async function deleteLink(linkId) {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            showNotification('Please log in to delete links', 'error');
+            return;
+        }
+
+        // Confirm deletion
+        if (!confirm('Are you sure you want to delete this link?')) {
+            return;
+        }
+
+        const { error } = await window.supabaseClient
+            .from('quick_links')
+            .delete()
+            .eq('id', linkId)
+            .eq('user_id', user.id); // Extra security check
+
+        if (error) throw error;
+
+        // Remove from local array
+        quickLinks = quickLinks.filter(link => link.id !== linkId);
+        
+        // Re-render the UI
+        renderQuickLinks();
+        
+        showNotification('Link deleted successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error deleting link:', error);
+        showNotification('Failed to delete link', 'error');
+    }
 }
 
-function loadQuickLinks() {
-    const saved = localStorage.getItem('studysync-links');
-    if (saved) {
-        quickLinks = JSON.parse(saved);
+async function loadQuickLinks() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            quickLinks = [];
+            renderQuickLinks();
+            return;
+        }
+
+        const { data, error } = await window.supabaseClient
+            .from('quick_links')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        quickLinks = data || [];
+        renderQuickLinks();
+    } catch (error) {
+        console.error('Error loading links:', error);
+        quickLinks = [];
         renderQuickLinks();
     }
 }
@@ -775,7 +899,276 @@ const BG_REMOVER_API = {
   }
 };
 
+// ========== STORAGE FUNCTIONS ==========
+async function saveProcessedImage(processedBlob, originalFileName) {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            throw new Error('You must be logged in to save images');
+        }
 
+        // Create unique filename with user ID folder
+        const fileExt = 'png';
+        const fileName = `${user.id}/${Date.now()}_${originalFileName.replace(/\.[^/.]+$/, "")}.${fileExt}`;
+
+        const { data, error } = await window.supabaseClient.storage
+            .from('background-removed-images')
+            .upload(fileName, processedBlob, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (error) throw error;
+
+        console.log('✅ Image saved to storage:', data);
+        
+        // Get public URL for the saved image
+        const { data: urlData } = window.supabaseClient.storage
+            .from('background-removed-images')
+            .getPublicUrl(fileName);
+
+        return {
+            storagePath: fileName,
+            publicUrl: urlData.publicUrl
+        };
+        
+    } catch (error) {
+        console.error('Error saving image:', error);
+        throw error;
+    }
+}
+
+async function getUserImages() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            return [];
+        }
+
+        const { data, error } = await window.supabaseClient.storage
+            .from('background-removed-images')
+            .list(user.id, {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'created_at', order: 'desc' }
+            });
+
+        if (error) throw error;
+
+        // Get public URLs for each image
+        const imagesWithUrls = data.map(item => ({
+            name: item.name,
+            publicUrl: window.supabaseClient.storage
+                .from('background-removed-images')
+                .getPublicUrl(`${user.id}/${item.name}`).publicUrl,
+            createdAt: item.created_at
+        }));
+
+        return imagesWithUrls;
+        
+    } catch (error) {
+        console.error('Error fetching user images:', error);
+        return [];
+    }
+}
+
+async function deleteUserImage(filePath) {
+    try {
+        const { error } = await window.supabaseClient.storage
+            .from('background-removed-images')
+            .remove([filePath]);
+
+        if (error) throw error;
+        
+        return true;
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        throw error;
+    }
+}
+
+// ========== UPDATED removeBackground FUNCTION ==========
+async function removeBackground() {
+    try {
+        await requireAuth('background remover');
+    } catch (authError) {
+        console.log('Authentication required');
+        return; // Stop execution if not authenticated
+    }
+    
+    // Only reach here if user is authenticated
+    if (!currentImage) return;
+  
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const removeBgBtn = document.getElementById('removeBgBtn');
+    const resultPreview = document.getElementById('resultPreview');
+    const downloadBtn = document.getElementById('downloadBtn');
+  
+    if (loadingSpinner) loadingSpinner.style.display = 'block';
+    if (removeBgBtn) removeBgBtn.disabled = true;
+  
+    try {
+        console.log('=== BACKGROUND REMOVER DEBUG INFO ===');
+        console.log('1. Current image:', currentImage);
+        console.log('2. Image name:', currentImage.name);
+        console.log('3. Image size:', currentImage.size, 'bytes');
+        console.log('4. Image type:', currentImage.type);
+        console.log('5. API Key being used:', 'jTZa6MtpPWM4L9K26a6ZuVko');
+        
+        // Test if the image is valid
+        if (currentImage.size === 0) {
+            throw new Error('Image file is empty');
+        }
+        if (currentImage.size > 12 * 1024 * 1024) {
+            throw new Error('Image is too large (max 12MB)');
+        }
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(currentImage.type)) {
+            throw new Error('Unsupported image format. Use JPG, PNG, or WEBP');
+        }
+        
+        console.log('6. Making API request to Remove.bg...');
+        
+        const processedBlob = await BG_REMOVER_API.removeBg(currentImage);
+        
+        console.log('7. API response received!');
+        console.log('8. Processed blob size:', processedBlob.size, 'bytes');
+        console.log('9. Processed blob type:', processedBlob.type);
+        
+        if (processedBlob.size === 0) {
+            throw new Error('Received empty response from API');
+        }
+        
+        processedImageUrl = URL.createObjectURL(processedBlob);
+        console.log('10. Created object URL:', processedImageUrl);
+        
+        if (resultPreview) {
+            resultPreview.innerHTML = `<img src="${processedImageUrl}" alt="Background removed">`;
+            console.log('11. Image displayed in result preview');
+        } else {
+            console.error('11. ERROR: resultPreview element not found!');
+        }
+        
+        if (downloadBtn) {
+            downloadBtn.disabled = false;
+            console.log('12. Download button enabled');
+        }
+
+        // ✅ NEW: Auto-save to Supabase Storage if user is logged in
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (user) {
+            try {
+                const savedImage = await saveProcessedImage(processedBlob, currentImage.name);
+                console.log('✅ Image auto-saved to storage:', savedImage);
+                showNotification('Image processed and saved!', 'success');
+                
+                // Refresh the saved images gallery
+                loadUserImages();
+                
+            } catch (saveError) {
+                console.error('Failed to auto-save image:', saveError);
+                // Don't show error - saving is optional
+            }
+        }
+        
+        console.log('=== BACKGROUND REMOVAL SUCCESSFUL ===');
+        
+    } catch (error) {
+        console.error('=== BACKGROUND REMOVAL FAILED ===');
+        console.error('Error details:', error);
+        console.error('Error message:', error.message);
+        
+        // Your existing error handling code...
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            alert('Network error. Please check your internet connection.');
+        } 
+        // ... rest of your error handling
+    } finally {
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        if (removeBgBtn) removeBgBtn.disabled = false;
+        console.log('=== PROCESS COMPLETED ===');
+    }
+}
+
+// ========== GALLERY FUNCTIONS ==========
+async function loadUserImages() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            // Hide the section if user is not logged in
+            const savedImagesSection = document.getElementById('savedImagesSection');
+            if (savedImagesSection) savedImagesSection.style.display = 'none';
+            return;
+        }   
+
+        const userImages = await getUserImages();
+        const savedImagesGrid = document.getElementById('savedImagesGrid');
+        const savedImagesSection = document.getElementById('savedImagesSection');
+        
+        if (userImages.length === 0) {
+            savedImagesGrid.innerHTML = '<p class="empty-state">No saved images yet. Process some images to see them here!</p>';
+            if (savedImagesSection) savedImagesSection.style.display = 'block';
+            return;
+        }
+        
+        // ✅ KEEP ONLY THIS ONE TEMPLATE RENDERING BLOCK
+        savedImagesGrid.innerHTML = userImages.map(image => `
+        <div class="saved-image-item" style="text-align: center;">
+            <img src="${image.publicUrl}" alt="Saved image" style="max-width: 150px; max-height: 150px; border-radius: 8px;">
+            <div style="margin-top: 8px;">
+                <button class="btn-secondary download-saved-btn" data-url="${image.publicUrl}" data-filename="${image.name}" style="font-size: 0.8rem; padding: 5px 10px;">
+                    Download
+                </button>
+                <button class="btn-secondary delete-saved-btn" data-path="${user.id}/${image.name}" style="font-size: 0.8rem; padding: 5px 10px; margin-left: 5px;">
+                    Delete
+                </button>
+            </div>
+        </div>
+    `).join('');
+        
+        // Add event listeners to the new buttons
+        document.querySelectorAll('.download-saved-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                downloadSavedImage(this.dataset.url, this.dataset.filename);
+            });
+        });
+        
+        document.querySelectorAll('.delete-saved-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                deleteSavedImage(this.dataset.path);
+            });
+        });
+        
+        // Show the section
+        if (savedImagesSection) savedImagesSection.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading user images:', error);
+    }
+}   
+
+function downloadSavedImage(url, filename) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+async function deleteSavedImage(filePath) {
+    if (!confirm('Are you sure you want to delete this image?')) return;
+    
+    try {
+        await deleteUserImage(filePath);
+        showNotification('Image deleted successfully', 'success');
+        loadUserImages(); // Refresh the list
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        showNotification('Failed to delete image', 'error');
+    }
+}
+
+// ========== EXISTING HELPER FUNCTIONS ==========
 function initBackgroundRemover() {
   const uploadArea = document.getElementById('uploadArea');
   const imageInput = document.getElementById('imageInput');
@@ -832,6 +1225,9 @@ function initBackgroundRemover() {
   removeBgBtn.addEventListener('click', removeBackground);
   downloadBtn.addEventListener('click', downloadResult);
   resetBtn.addEventListener('click', resetBgRemover);
+  
+  // Load user images when initializing
+  loadUserImages();
   
   console.log('Background remover initialized successfully');
 }
@@ -890,94 +1286,8 @@ function handleImageFile(file) {
   reader.readAsDataURL(file);
 }
 
-async function removeBackground() {
-  if (!currentImage) return;
-  
-  const loadingSpinner = document.getElementById('loadingSpinner');
-  const removeBgBtn = document.getElementById('removeBgBtn');
-  const resultPreview = document.getElementById('resultPreview');
-  const downloadBtn = document.getElementById('downloadBtn');
-  
-  if (loadingSpinner) loadingSpinner.style.display = 'block';
-  if (removeBgBtn) removeBgBtn.disabled = true;
-  
-  try {
-    console.log('=== BACKGROUND REMOVER DEBUG INFO ===');
-    console.log('1. Current image:', currentImage);
-    console.log('2. Image name:', currentImage.name);
-    console.log('3. Image size:', currentImage.size, 'bytes');
-    console.log('4. Image type:', currentImage.type);
-    console.log('5. API Key being used:', 'jTZa6MtpPWM4L9K26a6ZuVko');
-    
-    // Test if the image is valid
-    if (currentImage.size === 0) {
-      throw new Error('Image file is empty');
-    }
-    if (currentImage.size > 12 * 1024 * 1024) {
-      throw new Error('Image is too large (max 12MB)');
-    }
-    if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(currentImage.type)) {
-      throw new Error('Unsupported image format. Use JPG, PNG, or WEBP');
-    }
-    
-    console.log('6. Making API request to Remove.bg...');
-    
-    const processedBlob = await BG_REMOVER_API.removeBg(currentImage);
-    
-    console.log('7. API response received!');
-    console.log('8. Processed blob size:', processedBlob.size, 'bytes');
-    console.log('9. Processed blob type:', processedBlob.type);
-    
-    if (processedBlob.size === 0) {
-      throw new Error('Received empty response from API');
-    }
-    
-    processedImageUrl = URL.createObjectURL(processedBlob);
-    console.log('10. Created object URL:', processedImageUrl);
-    
-    if (resultPreview) {
-      resultPreview.innerHTML = `<img src="${processedImageUrl}" alt="Background removed">`;
-      console.log('11. Image displayed in result preview');
-    } else {
-      console.error('11. ERROR: resultPreview element not found!');
-    }
-    
-    if (downloadBtn) {
-      downloadBtn.disabled = false;
-      console.log('12. Download button enabled');
-    }
-    
-    console.log('=== BACKGROUND REMOVAL SUCCESSFUL ===');
-    
-  } catch (error) {
-    console.error('=== BACKGROUND REMOVAL FAILED ===');
-    console.error('Error details:', error);
-    console.error('Error message:', error.message);
-    
-    // Check if it's a network error
-    if (error.name === 'TypeError' && error.message.includes('fetch')) {
-      alert('Network error. Please check your internet connection.');
-    } 
-    // Check for specific API errors
-    else if (error.message.includes('401')) {
-      alert('Invalid API key. Please check your Remove.bg API key.');
-    } else if (error.message.includes('402')) {
-      alert('No API credits remaining. Check your Remove.bg account.');
-    } else if (error.message.includes('400')) {
-      alert('Invalid image file. Please try a different image.');
-    } else if (error.message.includes('413')) {
-      alert('Image file is too large. Maximum size is 12MB.');
-    } else if (error.message.includes('422')) {
-      alert('Unable to process this image. Try a different one.');
-    } else {
-      alert('Failed to remove background: ' + error.message);
-    }
-  } finally {
-    if (loadingSpinner) loadingSpinner.style.display = 'none';
-    if (removeBgBtn) removeBgBtn.disabled = false;
-    console.log('=== PROCESS COMPLETED ===');
-  }
-}
+
+
 
 function downloadResult() {
   if (!processedImageUrl) return;
@@ -1010,15 +1320,9 @@ function resetBgRemover() {
   if (imageInput) imageInput.value = '';
 }
 
-// Event Listeners
-sidebarToggle.addEventListener('click', toggleSidebar);
 
-// Close sidebar when clicking overlay
-overlay.addEventListener('click', function() {
-    sidebar.classList.remove('active');
-    overlay.style.display = 'none';
-    document.body.style.overflow = '';
-});
+
+
 
 // Close sidebar when clicking on a nav item (mobile)
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -1242,7 +1546,7 @@ async function signUpUser() {
 }
 
 async function logoutUser() {
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await window.supabaseClient.auth.signOut();
     if (error) {
         console.error('Logout error:', error);
         showNotification('Logout failed', 'error');
@@ -1251,8 +1555,141 @@ async function logoutUser() {
     }
 }
 
-// Auth state listener
+// ========== AUTH GUARD FUNCTION ==========
+function requireAuth(featureName = 'this feature') {
+    return new Promise(async (resolve, reject) => {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        
+        if (!user) {
+            // Show auth modal and reject promise
+            showNotification(`Please log in to use ${featureName}`, 'info');
+            openAuthModal();
+            reject(new Error('Authentication required'));
+        } else {
+            resolve(user);
+        }
+    });
+}
 
+function updateUIForAuthState(session) {
+    const authButtons = document.querySelector('.auth-buttons');
+    const user = session?.user;
+
+    if (user) {
+        authButtons.innerHTML = `
+            <span style="color: var(--text-secondary); margin-right: 10px;">
+                👋 ${user.email}
+            </span>
+            <button class="btn-secondary" id="logoutBtn">Logout</button>
+        `;
+        
+        enableProtectedFeatures();
+        
+        // ✅ Load user-specific data when logged in
+        loadTasks();
+        loadQuickLinks();
+        loadSavedQuotes();
+        
+    } else {
+        authButtons.innerHTML = `
+            <button class="btn-secondary" id="loginBtn">Login</button>
+            <button class="btn-primary" id="signupBtn">Sign Up</button>
+        `;
+        
+        // ✅ CLEAR ALL DATA FROM UI WHEN LOGGED OUT
+        clearAllData();
+        disableProtectedFeatures();
+    }
+}
+
+// ✅ ADD THIS NEW FUNCTION TO CLEAR UI DATA
+function clearAllData() {
+    // Clear tasks
+    tasks = [];
+    const todoList = document.getElementById('todoList');
+    const todoListFull = document.getElementById('todoListFull');
+    if (todoList) todoList.innerHTML = '<p class="empty-state">No tasks yet. Add your first task!</p>';
+    if (todoListFull) todoListFull.innerHTML = '<p class="empty-state">No tasks yet. Add your first task!</p>';
+    
+    // Clear quick links (reset to default links)
+    quickLinks = [
+        { name: 'Google Drive', url: 'https://drive.google.com' },
+        { name: 'University Portal', url: 'https://university.edu' },
+        { name: 'YouTube', url: 'https://youtube.com' },
+        { name: 'Spotify', url: 'https://spotify.com' },
+        { name: 'Notion', url: 'https://notion.so' }
+    ];
+    renderQuickLinks();
+    
+    // Clear saved quotes
+    savedQuotes = [];
+    const savedQuotesList = document.getElementById('savedQuotesList');
+    if (savedQuotesList) savedQuotesList.innerHTML = '<p class="empty-state">No saved quotes yet.</p>';
+    
+    // Clear any current image in background remover
+    if (currentImage) {
+        resetBgRemover();
+    }
+    
+    console.log('🧹 All user data cleared from UI');
+}
+
+function disableProtectedFeatures() {
+    console.log('🛑 Disabling protected features...');
+    
+    // Don't disable background remover button - let requireAuth handle it
+    const removeBgBtn = document.getElementById('removeBgBtn');
+    if (removeBgBtn) {
+        removeBgBtn.disabled = false; // Keep it enabled for auth flow
+        removeBgBtn.title = 'Please log in to use this feature';
+        removeBgBtn.classList.add('feature-protected');
+    }
+    
+    // Disable other protected buttons but NOT timer buttons
+    const saveButtons = document.querySelectorAll('[id*="save"], [id*="add"]');
+    saveButtons.forEach(btn => {
+        // Don't disable timer-related buttons
+        if (btn.id.includes('Timer')) return;
+        
+        if (btn.id !== 'loginBtn' && btn.id !== 'signupBtn') {
+            btn.disabled = true;
+            btn.title = 'Please log in to use this feature';
+            btn.classList.add('feature-protected');
+        }
+    });
+    
+    // Hide saved images section
+    const savedImagesSection = document.getElementById('savedImagesSection');
+    if (savedImagesSection) savedImagesSection.style.display = 'none';
+}
+
+function enableProtectedFeatures() {
+    console.log('✅ Enabling protected features...');
+    
+    const removeBgBtn = document.getElementById('removeBgBtn');
+    if (removeBgBtn) {
+        removeBgBtn.disabled = !currentImage; // Only disable if no image selected
+        removeBgBtn.title = '';
+        removeBgBtn.classList.remove('feature-protected');
+    }
+    
+    // Enable all other protected buttons (but timers are always enabled)
+    const protectedButtons = document.querySelectorAll('[id*="save"], [id*="add"]');
+    protectedButtons.forEach(btn => {
+        if (btn.id !== 'loginBtn' && btn.id !== 'signupBtn' && !btn.id.includes('Timer')) {
+            btn.disabled = false;
+            btn.title = '';
+            btn.classList.remove('feature-protected');
+        }
+    });
+    
+    // Show saved images section
+    const savedImagesSection = document.getElementById('savedImagesSection');
+    if (savedImagesSection) savedImagesSection.style.display = 'block';
+    
+    // Load user-specific data
+    loadUserImages();
+}
 
 // Main DOM Content Loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -1263,9 +1700,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
     window.supabaseClient.auth.onAuthStateChange((event, session) => {
-        console.log('🔍 Auth event:', event, 'User:', session?.user);
-        updateUIForAuthState(session?.user);
-        
+        console.log('🔍 Auth event:', event, 'Session:', session);
+        updateUIForAuthState(session);
+    
         if (session) {
             console.log('✅ User is logged in:', session.user.email);
             showNotification('Welcome to StudySync!', 'success');
@@ -1273,23 +1710,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ User logged out');
         }
     });
-
-    function updateUIForAuthState(user) {
-        const authButtons = document.querySelector('.auth-buttons');
-        if (user) {
-            authButtons.innerHTML = `
-                <span style="color: var(--text-secondary); margin-right: 10px;">
-                    👋 ${user.email}
-                </span>
-                <button class="btn-secondary" id="logoutBtn">Logout</button>
-            `;
-        } else {
-            authButtons.innerHTML = `
-                <button class="btn-secondary" id="loginBtn">Login</button>
-                <button class="btn-primary" id="signupBtn">Sign Up</button>
-            `;
-        }
-    }
 
     // ✅ SINGLE EVENT LISTENER (no nesting)
     document.addEventListener('click', function(e) {
@@ -1310,7 +1730,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Todo buttons
-        if (e.target.id === 'addTaskBtn' || e.target.id === 'addTaskFullBtn') {
+        if (e.target.id === 'addLinkBtn' || e.target.id === 'addLinkFullBtn') {
             console.log('🔍 DEBUG: Add task clicked');
             openAddTaskModal();
         }
@@ -1319,6 +1739,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.id === 'addLinkBtn' || e.target.id === 'addLinkFullBtn') {
             console.log('🔍 DEBUG: Add link clicked - ID:', e.target.id);
             openAddLinkModal();
+        }
+
+        if (e.target.classList.contains('delete-link-btn')) {
+            const linkId = parseInt(e.target.dataset.linkId);
+            console.log('🔍 DEBUG: Delete link clicked:', linkId);
+            deleteLink(linkId);
         }
         
         // Quote buttons
@@ -1368,6 +1794,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const taskId = parseInt(e.target.dataset.taskId);
             console.log('🔍 DEBUG: Delete task clicked:', taskId);
             deleteTask(taskId);
+        }
+    });
+
+    // ✅ ADD SIDEBAR TOGGLE HERE (right after the main click listener)
+    sidebarToggle.addEventListener('click', function(e) {
+        e.stopPropagation(); // Prevent event from bubbling up
+        toggleSidebar();
+    });
+
+    // ✅ ALSO ADD OVERLAY CLICK TO CLOSE SIDEBAR
+    overlay.addEventListener('click', function() {
+        if (window.innerWidth <= 768) {
+            sidebar.classList.remove('active');
+            overlay.style.display = 'none';
+            document.body.style.overflow = '';
         }
     });
 
@@ -1423,6 +1864,15 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('signup-form').style.display = 
                 currentAuthTab === 'signup' ? 'block' : 'none';
         });
+    });
+
+    window.supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        updateUIForAuthState(session);
+        if (session) {
+            loadTasks();
+            loadQuickLinks();
+            loadSavedQuotes();
+        }
     });
     
     // Initialize displays

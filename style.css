@@ -1195,3 +1195,76 @@ textarea:focus {
     background: var(--bg-color);
     color: var(--text-primary);
 }
+
+/* Protected Feature Styles */
+.feature-protected {
+    position: relative;
+}
+
+.feature-protected::after {
+    content: '🔒 Login Required';
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent-color);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.feature-protected:hover::after {
+    opacity: 1;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+/* Alternative: Show delete button only on hover */
+.link-item-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.link-item {
+    flex: 1;
+    /* your existing link-item styles */
+}
+
+.delete-link-btn {
+    background: var(--error-color);
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: scale(0.8);
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.link-item-container:hover .delete-link-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.delete-link-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1) !important;
+}
