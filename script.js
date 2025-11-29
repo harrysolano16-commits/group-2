@@ -297,7 +297,6 @@ function toggleTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if (task) {
         task.completed = !task.completed;
-        saveTasks();
         renderTasks();
     }
 }
