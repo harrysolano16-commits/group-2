@@ -711,67 +711,90 @@ button.link-item:hover {
 }
 
 /* Modal */
+/* Modal - FIXED CENTERING WITH !important */
 .modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 2000;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(2px);
+  display: none !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: rgba(0, 0, 0, 0.8) !important;
+  z-index: 2000 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  backdrop-filter: blur(2px) !important;
+  overflow-y: auto !important;
+  padding: 20px !important;
 }
 
+/* When modal is active, use flex display */
+.modal[style*="display: flex"],
 .modal.active {
-  display: flex;
+  display: flex !important;
 }
 
 .modal-content {
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 30px;
-  width: 90%;
-  max-width: 500px;
-  border: 1px solid var(--border-color);
-  animation: fadeIn 0.3s ease;
+  background: var(--card-bg) !important;
+  border-radius: var(--border-radius) !important;
+  padding: 30px !important;
+  width: 90% !important;
+  max-width: 500px !important;
+  border: 1px solid var(--border-color) !important;
+  animation: modalSlideIn 0.3s ease-out !important;
+  position: relative !important;
+  max-height: calc(100vh - 40px) !important;
+  overflow-y: auto !important;
+  margin: 0 !important; /* CRITICAL - remove any margins */
+  transform: none !important; /* Ensure no transforms are affecting position */
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.close-modal {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 5px;
-  border-radius: 4px;
-  transition: var(--transition);
-}
-
-.close-modal:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-@keyframes fadeIn {
+/* Smooth modal animation */
+@keyframes modalSlideIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: translateY(-50px) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: translateY(0) scale(1);
   }
 }
+
+/* Ensure body doesn't scroll when modal is open */
+body.modal-open {
+  overflow: hidden !important;
+}
+
+.modal-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 20px !important;
+  position: relative !important;
+}
+
+.close-modal {
+  background: none !important;
+  border: none !important;
+  font-size: 1.5rem !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  padding: 5px !important;
+  border-radius: 4px !important;
+  transition: var(--transition) !important;
+  position: absolute !important;
+  top: -10px !important;
+  right: -10px !important;
+  z-index: 10 !important;
+}
+
+.close-modal:hover {
+  color: var(--text-primary) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+
 
 .modal-content h3 {
   margin-bottom: 20px;
@@ -1533,4 +1556,51 @@ textarea:focus {
     transform: translate(-50%, -50%);
     font-size: 2rem;
     z-index: 5;
+}
+
+/* Search Results Styles */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1002;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.search-result-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.search-result-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* Screen reader only */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

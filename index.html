@@ -418,11 +418,11 @@
           <div class="converter-options">
             <div class="converter-input">
                 <h4>Convert From</h4>
-                <select id="fromDocumentFormat">
-                    <option value="docx">Word Document (.docx)</option>
-                    <option value="txt">Text File (.txt)</option>
-                    <option value="html">HTML Document (.html)</option>
-                    <option value="odt">OpenDocument Text (.odt)</option>
+                <select id="fromImageFormat"> <!-- FIXED: Changed from fromDocumentFormat -->
+                    <option value="jpg">JPEG Image</option>
+                    <option value="png">PNG Image</option>
+                    <option value="webp">WebP Image</option>
+                    <option value="gif">GIF Image</option>
                 </select>
             </div>
             
@@ -430,11 +430,11 @@
             
             <div class="converter-output">
                 <h4>Convert To</h4>
-                <select id="toDocumentFormat">
-                    <option value="pdf">PDF Document (.pdf)</option>
-                    <option value="docx">Word Document (.docx)</option>
-                    <option value="txt">Text File (.txt)</option>
-                    <option value="html">HTML Document (.html)</option>
+                <select id="toImageFormat"> <!-- FIXED: Changed from toDocumentFormat -->
+                    <option value="jpg">JPEG Image</option>
+                    <option value="png">PNG Image</option>
+                    <option value="webp">WebP Image</option>
+                    <option value="gif">GIF Image</option>
                 </select>
             </div>
           </div>
@@ -561,6 +561,4 @@
 </div>
 
 </body>
-
-
 </html>

@@ -116,8 +116,7 @@ function setButtonLoading(button, isLoading) {
         { title: 'Quick Links', section: 'links', type: 'core', description: 'Access your frequently used links' },
         { title: 'Motivational Quotes', section: 'quotes', type: 'core', description: 'Get inspired with daily quotes' },
         
-        // Tools
-        { title: 'PDF Converter', section: 'pdf-converter', type: 'tool', description: 'Convert documents to PDF format' },
+        // Tools       
         { title: 'Flashcard Generator', section: 'flashcards', type: 'tool', description: 'Create study flashcards' },
         { title: 'Quiz Maker', section: 'quiz-maker', type: 'tool', description: 'Generate custom quizzes' },
         { title: 'PDF Combiner', section: 'pdf-combiner', type: 'tool', description: 'Merge multiple PDF files' },
@@ -217,16 +216,29 @@ function setButtonLoading(button, isLoading) {
     let tasks = [];
 
     function openAddTaskModal() {
-        const modal = document.getElementById('addTaskModal');
+    const modal = document.getElementById('addTaskModal');
+    if (modal) {
+        // Remove any existing display style and set to flex
+        modal.removeAttribute('style');
         modal.style.display = 'flex';
+        document.body.classList.add('modal-open');
         document.getElementById('taskTitle').focus();
+        
+        // Force reflow to ensure styles are applied
+        modal.offsetHeight;
     }
+}
+
 
     function closeAddTaskModal() {
-        const modal = document.getElementById('addTaskModal');
+    const modal = document.getElementById('addTaskModal');
+    if (modal) {
         modal.style.display = 'none';
-        document.getElementById('taskForm').reset();
     }
+    document.body.classList.remove('modal-open');
+    document.getElementById('taskForm').reset();
+}
+
 
     async function addTask(event) {
         event.preventDefault();
@@ -406,24 +418,28 @@ function setButtonLoading(button, isLoading) {
     ];
 
     function openAddLinkModal() {
-        console.log('🔍 DEBUG: openAddLinkModal called');
-        const modal = document.getElementById('addLinkModal');
-        console.log('🔍 DEBUG: Modal found:', modal);
+    const modal = document.getElementById('addLinkModal');
+    if (modal) {
+        // Remove any existing display style and set to flex
+        modal.removeAttribute('style');
+        modal.style.display = 'flex';
+        document.body.classList.add('modal-open');
+        document.getElementById('linkName')?.focus();
         
-        if (modal) {
-            modal.style.display = 'flex';
-            console.log('🔍 DEBUG: Modal display set to flex');
-            document.getElementById('linkName')?.focus();
-        } else {
-            console.log('❌ DEBUG: Modal not found!');
-        }
+        // Force reflow to ensure styles are applied
+        modal.offsetHeight;
     }
+}
 
     function closeAddLinkModal() {
-        const modal = document.getElementById('addLinkModal');
+    const modal = document.getElementById('addLinkModal');
+    if (modal) {
         modal.style.display = 'none';
-        document.getElementById('linkForm').reset();
     }
+    document.body.classList.remove('modal-open');
+    document.getElementById('linkForm').reset();
+}
+
 
     async function addLink(event) {
         event.preventDefault();
@@ -1535,87 +1551,92 @@ function initFileConverter() {
 }
 
 // Add this new function to check authentication state
-function checkConverterAuthState() {
-    const { user } = window.supabaseClient.auth.getUser() || {};
-    
-    // Get all converter elements that should be protected
-    const protectedElements = [
-        'documentInput', 'selectDocumentBtn', 'convertDocumentBtn',
-        'imageConvertInput', 'selectImageConvertBtn', 'convertImageBtn',
-        'documentUploadArea', 'imageUploadArea'
-    ];
-    
-    protectedElements.forEach(elementId => {
-        const element = document.getElementById(elementId);
-        if (element) {
-            if (!user) {
-                element.disabled = true;
-                element.style.opacity = '0.6';
-                element.style.cursor = 'not-allowed';
-                element.title = 'Please log in to use file converter';
-                
-                // Add overlay for upload areas
-                if (elementId.includes('UploadArea')) {
-                    element.style.position = 'relative';
-                    if (!element.querySelector('.auth-overlay')) {
-                        const overlay = document.createElement('div');
-                        overlay.className = 'auth-overlay';
-                        overlay.innerHTML = `
-                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-                                      background: rgba(0,0,0,0.7); display: flex; align-items: center; 
-                                      justify-content: center; border-radius: var(--border-radius); z-index: 10;">
-                                <div style="text-align: center; color: white; padding: 20px;">
-                                    <div style="font-size: 2rem; margin-bottom: 10px;">🔒</div>
-                                    <p style="font-weight: 600; margin-bottom: 5px;">Authentication Required</p>
-                                    <p style="font-size: 0.9rem; opacity: 0.8;">Please log in to use file converter</p>
-                                    <button class="btn-primary" onclick="openAuthModal()" 
-                                            style="margin-top: 15px; padding: 8px 16px; font-size: 0.9rem;">
-                                        Login / Sign Up
-                                    </button>
+async function checkConverterAuthState() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        
+        // Get all converter elements that should be protected
+        const protectedElements = [
+            'documentInput', 'selectDocumentBtn', 'convertDocumentBtn',
+            'imageConvertInput', 'selectImageConvertBtn', 'convertImageBtn',
+            'documentUploadArea', 'imageUploadArea'
+        ];
+        
+        protectedElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                if (!user) {
+                    element.disabled = true;
+                    element.style.opacity = '0.6';
+                    element.style.cursor = 'not-allowed';
+                    element.title = 'Please log in to use file converter';
+                    
+                    // Add overlay for upload areas
+                    if (elementId.includes('UploadArea')) {
+                        element.style.position = 'relative';
+                        if (!element.querySelector('.auth-overlay')) {
+                            const overlay = document.createElement('div');
+                            overlay.className = 'auth-overlay';
+                            overlay.innerHTML = `
+                                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                          background: rgba(0,0,0,0.7); display: flex; align-items: center; 
+                                          justify-content: center; border-radius: var(--border-radius); z-index: 10;">
+                                    <div style="text-align: center; color: white; padding: 20px;">
+                                        <div style="font-size: 2rem; margin-bottom: 10px;">🔒</div>
+                                        <p style="font-weight: 600; margin-bottom: 5px;">Authentication Required</p>
+                                        <p style="font-size: 0.9rem; opacity: 0.8;">Please log in to use file converter</p>
+                                        <button class="btn-primary" onclick="openAuthModal()" 
+                                                style="margin-top: 15px; padding: 8px 16px; font-size: 0.9rem;">
+                                            Login / Sign Up
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        `;
-                        element.appendChild(overlay);
+                            `;
+                            element.appendChild(overlay);
+                        }
                     }
-                }
-            } else {
-                element.disabled = false;
-                element.style.opacity = '1';
-                element.style.cursor = '';
-                element.title = '';
-                
-                // Remove overlay for upload areas
-                if (elementId.includes('UploadArea')) {
-                    const overlay = element.querySelector('.auth-overlay');
-                    if (overlay) {
-                        overlay.remove();
+                } else {
+                    element.disabled = false;
+                    element.style.opacity = '1';
+                    element.style.cursor = '';
+                    element.title = '';
+                    
+                    // Remove overlay for upload areas
+                    if (elementId.includes('UploadArea')) {
+                        const overlay = element.querySelector('.auth-overlay');
+                        if (overlay) {
+                            overlay.remove();
+                        }
                     }
                 }
             }
-        }
-    });
-    
-    // Update converter buttons with auth state
-    const convertButtons = document.querySelectorAll('#convertDocumentBtn, #convertImageBtn');
-    convertButtons.forEach(btn => {
-        if (!user) {
-            btn.innerHTML = '🔒 Login to Convert';
-            btn.classList.add('feature-protected');
-        } else {
-            btn.innerHTML = btn.id === 'convertDocumentBtn' ? 'Convert Document' : 'Convert Image';
-            btn.classList.remove('feature-protected');
-        }
-    });
-    
-    // Update file input placeholders
-    const fileInputs = document.querySelectorAll('#documentInput, #imageConvertInput');
-    fileInputs.forEach(input => {
-        if (!user) {
-            input.setAttribute('disabled', 'true');
-        } else {
-            input.removeAttribute('disabled');
-        }
-    });
+        });
+        
+        // Update converter buttons with auth state
+        const convertButtons = document.querySelectorAll('#convertDocumentBtn, #convertImageBtn');
+        convertButtons.forEach(btn => {
+            if (!user) {
+                btn.innerHTML = '🔒 Login to Convert';
+                btn.classList.add('feature-protected');
+            } else {
+                btn.innerHTML = btn.id === 'convertDocumentBtn' ? 'Convert Document' : 'Convert Image';
+                btn.classList.remove('feature-protected');
+            }
+        });
+        
+        // Update file input placeholders
+        const fileInputs = document.querySelectorAll('#documentInput, #imageConvertInput');
+        fileInputs.forEach(input => {
+            if (!user) {
+                input.setAttribute('disabled', 'true');
+            } else {
+                input.removeAttribute('disabled');
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error checking converter auth state:', error);
+    }
 }
 
 async function checkCloudConvertStatus() {
@@ -1691,6 +1712,32 @@ async function checkCloudConvertStatus() {
     }
 }
 
+function initDocumentConverter() {
+    const documentInput = document.getElementById('documentInput');
+    const selectDocumentBtn = document.getElementById('selectDocumentBtn');
+    const documentUploadArea = document.getElementById('documentUploadArea');
+    
+    if (!documentInput || !selectDocumentBtn || !documentUploadArea) {
+        console.error('Document converter elements not found');
+        return;
+    }
+    
+    // File selection
+    selectDocumentBtn.addEventListener('click', () => {
+        documentInput.click();
+    });
+    
+    documentUploadArea.addEventListener('click', () => {
+        documentInput.click();
+    });
+    
+    documentInput.addEventListener('change', handleDocumentSelect);
+    
+    // Conversion buttons
+    document.getElementById('convertDocumentBtn')?.addEventListener('click', convertDocument);
+    document.getElementById('downloadDocumentBtn')?.addEventListener('click', downloadConvertedFile);
+}
+
 function initImageConverter() {
     const imageInput = document.getElementById('imageConvertInput');
     const selectImageBtn = document.getElementById('selectImageConvertBtn');
@@ -1741,8 +1788,7 @@ function setupDragAndDrop(uploadArea, handler) {
     });
 }
 
-function handleDocumentSelect(e) {
-
+async function handleDocumentSelect(e) {
     const { user } = window.supabaseClient.auth.getUser() || {};
     if (!user) {
         showNotification('Please log in to select files', 'error');
@@ -1764,7 +1810,7 @@ function handleDocumentSelect(e) {
             const fileInfo = document.getElementById('documentFileInfo');
             if (fileInfo) {
                 fileInfo.innerHTML = `
-                    <div style="font-size: 0.9rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px;">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px;">
                         <strong>Selected:</strong> ${file.name}<br>
                         <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
                         <strong>Type:</strong> ${file.type || 'Unknown'}
@@ -1782,41 +1828,43 @@ function handleDocumentSelect(e) {
             showNotification(`Document selected: ${file.name}`, 'success');
             
         } catch (error) {
-            console.error('File validation error:', error);
-            showNotification(error.message, 'error');
-            e.target.value = ''; // Clear the input
-            currentConverterFile = null;
-            document.getElementById('convertDocumentBtn').disabled = true;
+            console.error('Auth check error:', error);
+            showNotification('Authentication error. Please try again.', 'error');
         }
     }
 }
 
-function handleImageConvertSelect(e) {
+async function handleImageConvertSelect(e) {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            showNotification('Please log in to select files', 'error');
+            openAuthModal();
+            e.target.value = ''; // Clear the file input
+            return;
+        }
 
-    const { user } = window.supabaseClient.auth.getUser() || {};
-    if (!user) {
-        showNotification('Please log in to select files', 'error');
-        openAuthModal();
+        const file = e.target.files[0];
+        if (file && file.type.startsWith('image/')) {
+            currentConverterFile = file;
+            
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const originalPreview = document.getElementById('originalImagePreview');
+                originalPreview.innerHTML = `<img src="${e.target.result}" alt="Original image" style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);">`;
+            };
+            reader.readAsDataURL(file);
+            
+            document.getElementById('convertImageBtn').disabled = false;
+            showNotification(`Image selected: ${file.name}`, 'success');
+        } else {
+            showNotification('Please select a valid image file', 'error');
+        }
+    } catch (error) {
+        console.error('Error in handleImageConvertSelect:', error);
+        showNotification('Error selecting file. Please try again.', 'error');
         e.target.value = ''; // Clear the file input
-        return;
-    }
-
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-        currentConverterFile = file;
-        
-        // Show preview
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const originalPreview = document.getElementById('originalImagePreview');
-            originalPreview.innerHTML = `<img src="${e.target.result}" alt="Original image" style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);">`;
-        };
-        reader.readAsDataURL(file);
-        
-        document.getElementById('convertImageBtn').disabled = false;
-        showNotification(`Image selected: ${file.name}`, 'success');
-    } else {
-        showNotification('Please select a valid image file', 'error');
     }
 }
 
@@ -2569,15 +2617,39 @@ function getMimeType(format) {
     let currentAuthTab = 'login';
 
     function openAuthModal() {
-        console.log('🔍 DEBUG: Opening auth modal');
+
         const modal = document.getElementById('authModal');
-        modal.style.display = 'flex';
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+        }
     }
 
+function debugModalPosition() {
+    const modals = ['addTaskModal', 'addLinkModal', 'authModal'];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        const computedStyle = window.getComputedStyle(modal);
+        console.log(`🔍 ${modalId}:`, {
+            display: modal.style.display,
+            computedDisplay: computedStyle.display,
+            position: computedStyle.position,
+            top: computedStyle.top,
+            bodyClass: document.body.classList.contains('modal-open')
+        });
+    });
+}
+
+// Call this after opening a modal to check: debugModalPosition()
+
     function closeAuthModal() {
-        console.log('🔍 DEBUG: Closing auth modal');
+
         const modal = document.getElementById('authModal');
-        modal.style.display = 'none';
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        document.body.classList.remove('modal-open');
         document.getElementById('authForm').reset();
     }
 
