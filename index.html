@@ -93,10 +93,10 @@
         <h3 id="tools-heading">TOOLS</h3>
         <ul>
           <li>
-            <button class="nav-item" data-section="pdf-converter">
-              <span aria-hidden="true">📄</span>
-              <span>PDF Converter</span>
-            </button>
+              <button class="nav-item" data-section="file-converter">
+                  <span aria-hidden="true">🔄</span>
+                  <span>File Converter</span>
+              </button>
           </li>
           <li>
             <button class="nav-item" data-section="flashcards">
@@ -345,6 +345,136 @@
         <div class="loading-spinner" id="loadingSpinner" style="display: none;">
           <div class="spinner"></div>
           <p>Removing background... This may take a few seconds.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- File Converter Section -->
+    <section class="content-section" id="file-converter" aria-labelledby="file-converter-heading">
+      <div class="section-header">
+        <h1 id="file-converter-heading">Study File Converter</h1>
+        <p>Convert study materials between different formats</p>
+      </div>
+      
+      <div class="converter-container">
+        <!-- Conversion Type Selection -->
+        <div class="converter-type-selector">
+          <h3>Select Conversion Type</h3>
+          <div class="converter-tabs">
+            <button class="converter-tab active" data-type="document">📄 Documents</button>
+            <button class="converter-tab" data-type="image">🖼️ Images</button>
+          </div>
+        </div>
+
+        <!-- Document Converter -->
+        <div class="converter-section active" id="document-converter">
+          <div class="converter-options">
+            <div class="converter-input">
+              <h4>Convert From</h4>
+              <select id="fromDocumentFormat">
+                <option value="pdf">PDF Document</option>
+                <option value="docx">Word Document</option>
+                <option value="txt">Text File</option>
+              </select>
+            </div>
+            
+            <div class="converter-arrow">→</div>
+            
+            <div class="converter-output">
+              <h4>Convert To</h4>
+              <select id="toDocumentFormat">
+                <option value="pdf">PDF Document</option>
+                <option value="docx">Word Document</option>
+                <option value="txt">Text File</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="file-upload-area" id="documentUploadArea">
+            <div class="upload-content">
+              <span class="upload-icon">📄</span>
+              <h3>Drop your document here</h3>
+              <p>or click to browse</p>
+              <input type="file" id="documentInput" accept=".pdf,.docx,.txt,.html" hidden>
+              <button class="btn-primary" id="selectDocumentBtn">Select Document</button>
+            </div>
+          </div>
+          
+          <div class="converter-actions">
+            <button class="btn-primary" id="convertDocumentBtn" disabled>Convert Document</button>
+            <button class="btn-secondary" id="downloadDocumentBtn" disabled>Download Result</button>
+          </div>
+        </div>
+
+        <div class="converter-result" id="convertedDocumentResult" style="min-height: 100px; display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: var(--border-radius);">
+            <p>Result will appear here</p>
+        </div>
+
+        <!-- Add file info display -->
+        <div id="documentFileInfo" style="margin-bottom: 15px;"></div>
+
+        <!-- Image Converter -->
+        <div class="converter-section" id="image-converter">
+          <div class="converter-options">
+            <div class="converter-input">
+                <h4>Convert From</h4>
+                <select id="fromDocumentFormat">
+                    <option value="docx">Word Document (.docx)</option>
+                    <option value="txt">Text File (.txt)</option>
+                    <option value="html">HTML Document (.html)</option>
+                    <option value="odt">OpenDocument Text (.odt)</option>
+                </select>
+            </div>
+            
+            <div class="converter-arrow">→</div>
+            
+            <div class="converter-output">
+                <h4>Convert To</h4>
+                <select id="toDocumentFormat">
+                    <option value="pdf">PDF Document (.pdf)</option>
+                    <option value="docx">Word Document (.docx)</option>
+                    <option value="txt">Text File (.txt)</option>
+                    <option value="html">HTML Document (.html)</option>
+                </select>
+            </div>
+          </div>
+          
+          <div class="file-upload-area" id="imageUploadArea">
+            <div class="upload-content">
+              <span class="upload-icon">🖼️</span>
+              <h3>Drop your image here</h3>
+              <p>or click to browse</p>
+              <input type="file" id="imageConvertInput" accept="image/*" hidden>
+              <button class="btn-primary" id="selectImageConvertBtn">Select Image</button>
+            </div>
+          </div>
+          
+          <div class="image-preview-container">
+            <div class="preview-box">
+              <h4>Original Image</h4>
+              <div class="image-preview" id="originalImagePreview">
+                <p>No image selected</p>
+              </div>
+            </div>
+            
+            <div class="preview-box">
+              <h4>Converted Image</h4>
+              <div class="image-preview" id="convertedImagePreview">
+                <p>Result will appear here</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="converter-actions">
+            <button class="btn-primary" id="convertImageBtn" disabled>Convert Image</button>
+            <button class="btn-secondary" id="downloadImageBtn" disabled>Download Result</button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-spinner" id="converterLoading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Converting file... This may take a few seconds.</p>
         </div>
       </div>
     </section>
