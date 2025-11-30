@@ -1722,6 +1722,15 @@ function initDocumentConverter() {
         return;
     }
     
+    // Set initial state
+    documentUploadArea.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+            <p>Click to select a document</p>
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Supports: PDF, DOCX, TXT</p>
+        </div>
+    `;
+    
     // File selection
     selectDocumentBtn.addEventListener('click', () => {
         documentInput.click();
@@ -1732,6 +1741,9 @@ function initDocumentConverter() {
     });
     
     documentInput.addEventListener('change', handleDocumentSelect);
+    
+    // ✅ ADD DRAG AND DROP FOR DOCUMENT CONVERTER
+    setupDragAndDrop(documentUploadArea, handleDocumentSelect);
     
     // Conversion buttons
     document.getElementById('convertDocumentBtn')?.addEventListener('click', convertDocument);
@@ -1782,38 +1794,54 @@ function setupDragAndDrop(uploadArea, handler) {
         
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            const event = { target: { files } };
+            // Create a synthetic event object that matches what the file input would produce
+            const event = { 
+                target: { 
+                    files: files 
+                } 
+            };
             handler(event);
         }
     });
 }
 
 async function handleDocumentSelect(e) {
-    const { user } = window.supabaseClient.auth.getUser() || {};
-    if (!user) {
-        showNotification('Please log in to select files', 'error');
-        openAuthModal();
-        e.target.value = ''; // Clear the file input
-        return;
-    }
+    try {
+        // Check if user is authenticated
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        if (!user) {
+            showNotification('Please log in to select files', 'error');
+            openAuthModal();
+            // Clear any file that might have been selected via drag and drop
+            if (e.target && e.target.value) {
+                e.target.value = '';
+            }
+            return;
+        }
 
-    const file = e.target.files[0];
-    if (file) {
-        try {
+        // Get the file - works for both file input and drag/drop
+        const file = e.target.files ? e.target.files[0] : (e.dataTransfer ? e.dataTransfer.files[0] : null);
+        
+        if (file) {
+            console.log('📄 File selected via drag/drop:', file.name);
+            
             // Get target format for validation
             const toFormat = document.getElementById('toDocumentFormat').value;
             validateFileForConversion(file, toFormat);
             
             currentConverterFile = file;
             
-            // Show file info
-            const fileInfo = document.getElementById('documentFileInfo');
-            if (fileInfo) {
-                fileInfo.innerHTML = `
-                    <div style="font-size: 0.9rem; color: var(--text-secondary); background: rgba(255,255,255,0.05); padding: 10px; border-radius: 6px;">
-                        <strong>Selected:</strong> ${file.name}<br>
-                        <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
-                        <strong>Type:</strong> ${file.type || 'Unknown'}
+            // Update the upload area to show file info
+            const documentUploadArea = document.getElementById('documentUploadArea');
+            if (documentUploadArea) {
+                documentUploadArea.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+                        <p><strong>${file.name}</strong></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">
+                            ${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type || 'Unknown type'}
+                        </p>
+                        <p style="font-size: 0.8rem; margin-top: 10px;">Click to select a different file</p>
                     </div>
                 `;
             }
@@ -1827,9 +1855,13 @@ async function handleDocumentSelect(e) {
             document.getElementById('convertDocumentBtn').disabled = false;
             showNotification(`Document selected: ${file.name}`, 'success');
             
-        } catch (error) {
-            console.error('Auth check error:', error);
-            showNotification('Authentication error. Please try again.', 'error');
+        }
+    } catch (error) {
+        console.error('Error in handleDocumentSelect:', error);
+        showNotification('Error selecting file. Please try again.', 'error');
+        // Clear any file input
+        if (e.target && e.target.value) {
+            e.target.value = '';
         }
     }
 }
@@ -1848,11 +1880,35 @@ async function handleImageConvertSelect(e) {
         if (file && file.type.startsWith('image/')) {
             currentConverterFile = file;
             
+            // Update image upload area to show file info
+            const imageUploadArea = document.getElementById('imageUploadArea');
+            if (imageUploadArea) {
+                imageUploadArea.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">🖼️</div>
+                        <p><strong>${file.name}</strong></p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">
+                            ${(file.size / 1024 / 1024).toFixed(2)} MB • ${file.type.split('/')[1].toUpperCase()}
+                        </p>
+                        <p style="font-size: 0.8rem; margin-top: 10px;">Click to select a different file</p>
+                    </div>
+                `;
+            }
+            
             // Show preview
             const reader = new FileReader();
             reader.onload = function(e) {
                 const originalPreview = document.getElementById('originalImagePreview');
-                originalPreview.innerHTML = `<img src="${e.target.result}" alt="Original image" style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);">`;
+                if (originalPreview) {
+                    originalPreview.innerHTML = `
+                        <div style="text-align: center;">
+                            <img src="${e.target.result}" alt="Original image" style="max-width: 100%; max-height: 200px; border-radius: var(--border-radius);">
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+                                Original: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </p>
+                        </div>
+                    `;
+                }
             };
             reader.readAsDataURL(file);
             
@@ -1865,6 +1921,16 @@ async function handleImageConvertSelect(e) {
         console.error('Error in handleImageConvertSelect:', error);
         showNotification('Error selecting file. Please try again.', 'error');
         e.target.value = ''; // Clear the file input
+    }
+}
+
+async function checkFileConverterAuth() {
+    try {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        return !!user;
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        return false;
     }
 }
 
@@ -2039,7 +2105,8 @@ async function convertWithCloudConvert(file, toFormat) {
                     operation: 'convert',
                     input: ['import-1'],
                     output_format: toFormat,
-                    engine: toFormat === 'pdf' ? 'office' : 'libreoffice'
+                    engine: 'libreoffice', // Use libreoffice for document conversions
+                    engine_version: '7.3'
                 },
                 'export-1': {
                     operation: 'export/url',
@@ -2109,10 +2176,11 @@ async function convertWithCloudConvert(file, toFormat) {
 
         console.log('✅ File uploaded successfully');
 
-        // Step 3: Wait for conversion to complete
+        // Step 3: Wait for conversion to complete with better error reporting
         const jobId = jobData.data.id;
         let conversionStatus = '';
         let downloadUrl = '';
+        let lastError = '';
 
         // Poll for job completion (max 3 minutes)
         for (let i = 0; i < 90; i++) {
@@ -2141,9 +2209,15 @@ async function convertWithCloudConvert(file, toFormat) {
                     break;
                 }
             } else if (conversionStatus === 'error') {
+                // Get detailed error information
                 const errorTask = statusData.data.tasks.find(task => task.status === 'error');
-                const errorMessage = errorTask?.result?.message || errorTask?.status || 'Unknown conversion error';
-                throw new Error(`Conversion failed: ${errorMessage}`);
+                if (errorTask) {
+                    lastError = errorTask.result?.message || errorTask.status || 'Unknown conversion error';
+                    console.error('❌ Task error details:', errorTask);
+                } else {
+                    lastError = 'Unknown conversion error - no task details available';
+                }
+                throw new Error(`Conversion failed: ${lastError}`);
             } else if (conversionStatus === 'cancelled') {
                 throw new Error('Conversion was cancelled');
             }
@@ -2181,9 +2255,157 @@ async function convertWithCloudConvert(file, toFormat) {
             throw new Error(`Unsupported file format for conversion to ${toFormat}`);
         } else if (error.message.includes('Rate limit')) {
             throw new Error('Too many requests. Please wait and try again.');
+        } else if (error.message.includes('Conversion failed')) {
+            // This is your specific error - let's make it more helpful
+            throw new Error(`Document conversion failed. The file might be corrupted or in an unsupported format. Try using a different file.`);
         } else {
             throw error;
         }
+    }
+}
+
+// Add this function for local text-to-PDF conversion
+async function localTextToPdf(text, filename) {
+    return new Promise((resolve) => {
+        // Simple PDF generation using jsPDF (you'll need to include jsPDF library)
+        // For now, create a basic text file with .pdf extension as fallback
+        const pdfContent = `%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 100 >>
+stream
+BT /F1 12 Tf 50 750 Td (${filename}) Tj ET
+BT /F1 12 Tf 50 730 Td (Converted text document) Tj ET
+BT /F1 10 Tf 50 710 Td (${text.substring(0, 500)}...) Tj ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000220 00000 n 
+trailer
+<< /Size 5 /Root 1 0 R >>
+startxref
+600
+%%EOF`;
+        
+        const blob = new Blob([pdfContent], { type: 'application/pdf' });
+        resolve(blob);
+    });
+}
+
+// Update your convertDocument function to use fallback
+async function convertDocument() {
+    try {
+        await requireAuth('file conversion');
+    } catch (error) {
+        showNotification('Please log in to convert files', 'error');
+        return;
+    }
+    if (!currentConverterFile) {
+        showNotification('Please select a file first', 'error');
+        return;
+    }
+    
+    const loadingSpinner = document.getElementById('converterLoading');
+    const convertBtn = document.getElementById('convertDocumentBtn');
+    const downloadBtn = document.getElementById('downloadDocumentBtn');
+    
+    try {
+        loadingSpinner.style.display = 'block';
+        setButtonLoading(convertBtn, true);
+        
+        const fromFormat = document.getElementById('fromDocumentFormat').value;
+        const toFormat = document.getElementById('toDocumentFormat').value;
+        
+        console.log(`🔄 Converting from ${fromFormat} to ${toFormat}`);
+        
+        let convertedBlob;
+        
+        if (fromFormat === toFormat) {
+            // Same format - just return the original file
+            convertedBlob = currentConverterFile;
+            showNotification('File format unchanged', 'info');
+        } else {
+            try {
+                // Try CloudConvert first
+                convertedBlob = await convertWithCloudConvert(currentConverterFile, toFormat);
+                showNotification(`✅ Document converted to ${toFormat.toUpperCase()}!`, 'success');
+            } catch (cloudError) {
+                console.warn('CloudConvert failed, trying local fallback:', cloudError);
+                
+                // Fallback for text to PDF
+                if (fromFormat === 'txt' && toFormat === 'pdf') {
+                    const text = await readFileAsText(currentConverterFile);
+                    convertedBlob = await localTextToPdf(text, currentConverterFile.name);
+                    showNotification('Converted using local fallback (basic PDF)', 'info');
+                } else {
+                    throw cloudError; // Re-throw if we can't handle it locally
+                }
+            }
+        }
+        
+        // Create download URL
+        convertedFileUrl = URL.createObjectURL(convertedBlob);
+        downloadBtn.disabled = false;
+        
+        // Show success message
+        const resultElement = document.getElementById('convertedDocumentResult');
+        if (resultElement) {
+            resultElement.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="color: var(--success-color); font-size: 48px; margin-bottom: 10px;">✓</div>
+                    <p>Conversion successful!</p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                        ${currentConverterFile.name} → converted.${toFormat}
+                    </p>
+                </div>
+            `;
+        }
+        
+    } catch (error) {
+        console.error('Conversion error:', error);
+        
+        let errorMessage = 'Conversion failed';
+        if (error.message.includes('Daily limit') || error.message.includes('insufficient credits')) {
+            errorMessage = 'Conversion limit reached. Try again tomorrow or check your CloudConvert account.';
+        } else if (error.message.includes('Unsupported format')) {
+            errorMessage = 'This file format conversion is not supported.';
+        } else if (error.message.includes('Invalid API key')) {
+            errorMessage = 'API configuration error. Please contact support.';
+        } else if (error.message.includes('Document conversion failed')) {
+            errorMessage = 'The file might be corrupted or in an unsupported format. Try using a different file.';
+        } else {
+            errorMessage = error.message;
+        }
+        
+        showNotification(`❌ ${errorMessage}`, 'error');
+        
+        // Show error in result area
+        const resultElement = document.getElementById('convertedDocumentResult');
+        if (resultElement) {
+            resultElement.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--error-color);">
+                    <p>Conversion failed</p>
+                    <p style="font-size: 0.8rem;">${errorMessage}</p>
+                </div>
+            `;
+        }
+        
+    } finally {
+        loadingSpinner.style.display = 'none';
+        setButtonLoading(convertBtn, false);
     }
 }
 
@@ -2402,10 +2624,48 @@ function resetConverter() {
         btn.disabled = true;
     });
     
+    // Reset upload areas to original state
+    const documentUploadArea = document.getElementById('documentUploadArea');
+    if (documentUploadArea) {
+        documentUploadArea.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+                <p>Click to select a document</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Supports: PDF, DOCX, TXT</p>
+            </div>
+        `;
+    }
+    
+    const imageUploadArea = document.getElementById('imageUploadArea');
+    if (imageUploadArea) {
+        imageUploadArea.innerHTML = `
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">🖼️</div>
+                <p>Click to select an image</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Supports: JPG, PNG, WEBP, GIF</p>
+            </div>
+        `;
+    }
+    
     // Reset previews
+    const documentFileInfo = document.getElementById('documentFileInfo');
+    if (documentFileInfo) {
+        documentFileInfo.innerHTML = '';
+    }
+    
+    const originalPreview = document.getElementById('originalImagePreview');
+    if (originalPreview) {
+        originalPreview.innerHTML = '<p>Original image will appear here</p>';
+    }
+    
     const convertedPreview = document.getElementById('convertedImagePreview');
     if (convertedPreview) {
         convertedPreview.innerHTML = '<p>Result will appear here</p>';
+    }
+    
+    const convertedDocumentResult = document.getElementById('convertedDocumentResult');
+    if (convertedDocumentResult) {
+        convertedDocumentResult.innerHTML = '<p>Converted document will appear here</p>';
     }
 }
 

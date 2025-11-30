@@ -1604,3 +1604,8 @@ textarea:focus {
     white-space: nowrap;
     border: 0;
 }
+
+.upload-area.dragover {
+    border: 2px dashed var(--primary-color) !important;
+    background: rgba(66, 153, 225, 0.1) !important;
+}
