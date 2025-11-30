@@ -294,7 +294,7 @@
         </div>
       </div>
     </section>
-    <!--Bgremover-->
+    
     <!-- Background Remover Section -->
     <section class="content-section" id="bg-remover" aria-labelledby="bg-remover-heading">
       <div class="section-header">
@@ -418,7 +418,7 @@
           <div class="converter-options">
             <div class="converter-input">
                 <h4>Convert From</h4>
-                <select id="fromImageFormat"> <!-- FIXED: Changed from fromDocumentFormat -->
+                <select id="fromImageFormat">
                     <option value="jpg">JPEG Image</option>
                     <option value="png">PNG Image</option>
                     <option value="webp">WebP Image</option>
@@ -430,7 +430,7 @@
             
             <div class="converter-output">
                 <h4>Convert To</h4>
-                <select id="toImageFormat"> <!-- FIXED: Changed from toDocumentFormat -->
+                <select id="toImageFormat">
                     <option value="jpg">JPEG Image</option>
                     <option value="png">PNG Image</option>
                     <option value="webp">WebP Image</option>
@@ -478,6 +478,104 @@
         </div>
       </div>
     </section>
+
+    <!-- Flashcard Generator Section -->
+    <section class="content-section" id="flashcards" aria-labelledby="flashcards-heading">
+      <div class="section-header">
+        <h1 id="flashcards-heading">Flashcard Generator</h1>
+        <p>Create and manage your own flashcards for effective studying</p>
+      </div>
+
+      <!-- Manual Flashcard Creator -->
+      <div class="manual-flashcard-creator">
+        <div class="creator-header">
+          <h3>Create Your Own Flashcards</h3>
+          <p>Manually create flashcards for better learning and retention</p>
+        </div>
+        
+        <!-- Topic Management -->
+        <div class="topic-management card">
+          <div class="card-header">
+            <h4>📁 Topics & Folders</h4>
+            <button class="btn-primary" id="createTopicBtn">+ New Topic</button>
+          </div>
+          <div class="topics-list" id="topicsList">
+            <!-- Topics will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Flashcard Creation Form -->
+        <div class="flashcard-creation-form card">
+          <h4>✏️ Create New Flashcard</h4>
+          <form id="manualFlashcardForm">
+            <div class="form-group">
+              <label for="flashcardTopic">Select Topic:</label>
+              <select id="flashcardTopic" required>
+                <option value="">-- Select a topic --</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="flashcardQuestion">Question:</label>
+              <textarea 
+                id="flashcardQuestion" 
+                placeholder="Enter your question..." 
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="flashcardAnswer">Answer:</label>
+              <textarea 
+                id="flashcardAnswer" 
+                placeholder="Enter the answer..." 
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label for="flashcardDifficulty">Difficulty Level:</label>
+              <select id="flashcardDifficulty">
+                <option value="easy">🟢 Easy</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="advanced">🔴 Advanced</option>
+              </select>
+            </div>
+            
+            <div class="form-actions">
+              <button type="submit" class="btn-primary">💾 Add Flashcard</button>
+              <button type="button" class="btn-secondary" id="clearFlashcardForm">🗑️ Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Flashcards Display -->
+        <div class="manual-flashcards-display card">
+          <div class="display-header">
+            <h4>📚 Your Flashcards</h4>
+            <div class="display-controls">
+              <select id="filterByTopic">
+                <option value="all">All Topics</option>
+              </select>
+              <select id="filterByDifficulty">
+                <option value="all">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="advanced">Advanced</option>
+              </select>
+              <button class="btn-primary" id="studyModeBtn">🎯 Study Mode</button>
+              <button class="btn-secondary" id="exportFlashcardsBtn">📤 Export</button>
+            </div>
+          </div>
+          <div class="manual-flashcards-grid" id="manualFlashcardsGrid">
+            <!-- Manual flashcards will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Add Task Modal -->
@@ -527,6 +625,25 @@
     </div>
   </div>
 
+  <!-- Add Topic Modal -->
+  <div class="modal" id="addTopicModal" role="dialog" aria-labelledby="topic-modal-title" aria-hidden="true">
+    <div class="modal-content" role="document">
+      <div class="modal-header">
+        <h3 id="topic-modal-title">Create New Topic</h3>
+        <button class="close-modal" id="closeTopicModal" aria-label="Close modal">×</button>
+      </div>
+      <form id="topicForm">
+        <label for="topicName">Topic Name</label>
+        <input type="text" id="topicName" placeholder="e.g., Biology Chapter 1" required>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="cancelTopic">Cancel</button>
+          <button type="submit" class="btn-primary">Create Topic</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Loading State -->
   <div id="loading" style="display: none;">
     <p>Loading...</p>
@@ -558,7 +675,7 @@
             </div>
         </form>
     </div>
-</div>
+  </div>
 
 </body>
 </html>
