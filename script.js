@@ -1731,13 +1731,33 @@ function initDocumentConverter() {
         </div>
     `;
     
-    // File selection
-    selectDocumentBtn.addEventListener('click', () => {
-        documentInput.click();
+    // File selection - with authentication check
+    selectDocumentBtn.addEventListener('click', async () => {
+        try {
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            if (!user) {
+                showNotification('Please log in to select files', 'error');
+                openAuthModal();
+                return;
+            }
+            documentInput.click();
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
     });
     
-    documentUploadArea.addEventListener('click', () => {
-        documentInput.click();
+    documentUploadArea.addEventListener('click', async () => {
+        try {
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            if (!user) {
+                showNotification('Please log in to select files', 'error');
+                openAuthModal();
+                return;
+            }
+            documentInput.click();
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
     });
     
     documentInput.addEventListener('change', handleDocumentSelect);
@@ -1757,15 +1777,35 @@ function initImageConverter() {
     const convertImageBtn = document.getElementById('convertImageBtn');
     const downloadImageBtn = document.getElementById('downloadImageBtn');
     
-    // File selection
-    selectImageBtn.addEventListener('click', () => {
-        imageInput.value = '';
-        imageInput.click();
+    // File selection - with authentication check
+    selectImageBtn.addEventListener('click', async () => {
+        try {
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            if (!user) {
+                showNotification('Please log in to select files', 'error');
+                openAuthModal();
+                return;
+            }
+            imageInput.value = '';
+            imageInput.click();
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
     });
     
-    imageUploadArea.addEventListener('click', () => {
-        imageInput.value = '';
-        imageInput.click();
+    imageUploadArea.addEventListener('click', async () => {
+        try {
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            if (!user) {
+                showNotification('Please log in to select files', 'error');
+                openAuthModal();
+                return;
+            }
+            imageInput.value = '';
+            imageInput.click();
+        } catch (error) {
+            console.error('Auth check failed:', error);
+        }
     });
     
     imageInput.addEventListener('change', handleImageConvertSelect);
@@ -1788,9 +1828,22 @@ function setupDragAndDrop(uploadArea, handler) {
         uploadArea.classList.remove('dragover');
     });
     
-    uploadArea.addEventListener('drop', (e) => {
+    uploadArea.addEventListener('drop', async (e) => {
         e.preventDefault();
         uploadArea.classList.remove('dragover');
+        
+        // ✅ CHECK AUTHENTICATION BEFORE PROCESSING DROPPED FILES
+        try {
+            const { data: { user } } = await window.supabaseClient.auth.getUser();
+            if (!user) {
+                showNotification('Please log in to use drag and drop', 'error');
+                openAuthModal();
+                return;
+            }
+        } catch (error) {
+            console.error('Auth check failed in drag/drop:', error);
+            return;
+        }
         
         const files = e.dataTransfer.files;
         if (files.length > 0) {
@@ -1812,18 +1865,35 @@ async function handleDocumentSelect(e) {
         if (!user) {
             showNotification('Please log in to select files', 'error');
             openAuthModal();
-            // Clear any file that might have been selected via drag and drop
+            
+            // ✅ CLEAR THE FILE INPUT AND STOP ANY FURTHER PROCESSING
             if (e.target && e.target.value) {
                 e.target.value = '';
             }
+            
+            // ✅ HIDE ANY FILE PREVIEW THAT MIGHT HAVE SHOWN UP
+            const documentUploadArea = document.getElementById('documentUploadArea');
+            if (documentUploadArea) {
+                documentUploadArea.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📄</div>
+                        <p>Click to select a document</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted);">Supports: PDF, DOCX, TXT</p>
+                    </div>
+                `;
+            }
+            
+            // ✅ RESET ANY FILE INFO
+            currentConverterFile = null;
+            document.getElementById('convertDocumentBtn').disabled = true;
+            
             return;
         }
 
-        // Get the file - works for both file input and drag/drop
         const file = e.target.files ? e.target.files[0] : (e.dataTransfer ? e.dataTransfer.files[0] : null);
         
         if (file) {
-            console.log('📄 File selected via drag/drop:', file.name);
+            console.log('📄 File selected:', file.name);
             
             // Get target format for validation
             const toFormat = document.getElementById('toDocumentFormat').value;
