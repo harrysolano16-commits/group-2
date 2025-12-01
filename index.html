@@ -105,29 +105,19 @@
             </button>
           </li>
           <li>
+            <button class="nav-item" data-section="dictionary">
+              <span aria-hidden="true">📚</span>
+              <span>Dictionary</span>
+            </button>
+          </li>
+          <li>
             <button class="nav-item" data-section="bg-remover">
               <span aria-hidden="true">🖼️</span>
               <span>Background Remover</span>
             </button>
           </li>
-          <li>
-            <button class="nav-item" data-section="quiz-maker">
-              <span aria-hidden="true">❓</span>
-              <span>Quiz Maker</span>
-            </button>
-          </li>
-          <li>
-            <button class="nav-item" data-section="pdf-combiner">
-              <span aria-hidden="true">🔗</span>
-              <span>PDF Combiner</span>
-            </button>
-          </li>
-          <li>
-            <button class="nav-item" data-section="pdf-summarizer">
-              <span aria-hidden="true">📊</span>
-              <span>PDF Summarizer</span>
-            </button>
-          </li>
+
+          
         </ul>
       </section>
 
@@ -576,6 +566,101 @@
       </div>
     </section>
 
+    <!-- Dictionary Section -->
+    <section class="content-section" id="dictionary" aria-labelledby="dictionary-heading">
+      <div class="section-header">
+        <h1 id="dictionary-heading">Dictionary</h1>
+        <p>Look up word definitions, synonyms, and pronunciations</p>
+      </div>
+      
+      <div class="dictionary-container">
+        <!-- Search Area -->
+        <div class="dictionary-search card">
+          <h3>Word Lookup</h3>
+          <div class="search-container">
+            <input 
+              type="text" 
+              id="dictionarySearch" 
+              placeholder="Enter a word (e.g., 'serendipity', 'ephemeral')..."
+              autocomplete="off"
+            >
+            <button class="btn-primary" id="searchWordBtn">Search</button>
+          </div>
+          <div class="search-suggestions" id="searchSuggestions">
+            <!-- Suggestions will appear here -->
+          </div>
+        </div>
+
+        <!-- Word Display -->
+        <div class="dictionary-results card" id="dictionaryResults" style="display: none;">
+          <div class="word-header">
+            <div class="word-title">
+              <h2 id="wordTitle">Word</h2>
+              <span class="phonetic" id="wordPhonetic">/ˈwɜːrd/</span>
+            </div>
+            <button class="btn-secondary" id="pronounceBtn">🔊 Pronounce</button>
+          </div>
+
+          <!-- Definitions -->
+          <div class="definitions-section">
+            <h3>Definitions</h3>
+            <div class="definitions-list" id="definitionsList">
+              <!-- Definitions will appear here -->
+            </div>
+          </div>
+
+          <!-- Synonyms & Antonyms -->
+          <div class="related-words">
+            <div class="synonyms">
+              <h3>Synonyms</h3>
+              <div class="word-tags" id="synonymsList">
+                <!-- Synonyms will appear here -->
+              </div>
+            </div>
+            <div class="antonyms">
+              <h3>Antonyms</h3>
+              <div class="word-tags" id="antonymsList">
+                <!-- Antonyms will appear here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Examples -->
+          <div class="examples-section">
+            <h3>Examples</h3>
+            <div class="examples-list" id="examplesList">
+              <!-- Examples will appear here -->
+            </div>
+          </div>
+
+          <!-- Word History -->
+          <div class="word-history">
+            <h3>Word History</h3>
+            <div class="history-content" id="wordHistory">
+              <!-- Word history will appear here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Saved Words -->
+        <div class="saved-words card">
+          <div class="saved-words-header">
+            <h3>📚 Saved Words</h3>
+            <button class="btn-secondary" id="clearSavedWords">Clear All</button>
+          </div>
+          <div class="saved-words-list" id="savedWordsList">
+            <!-- Saved words will appear here -->
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-spinner" id="dictionaryLoading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Looking up word...</p>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Add Task Modal -->
@@ -677,5 +762,6 @@
     </div>
   </div>
 
+<div class="study-mode" style="display: none;"></div>
 </body>
 </html>
