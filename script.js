@@ -66,7 +66,8 @@ function initApp() {
     initSearch();
     initNavigation();
     initAuth(); 
-    
+    initThemeToggle();
+    initStudyResources();
     // Load initial data
     loadInitialData();
     
@@ -3406,3 +3407,124 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === this) closeAddTopicModal();
     });
 });
+
+// ========== THEME TOGGLE FUNCTIONALITY ==========
+function initThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Get saved theme or default to light
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    
+    // Apply the saved theme
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    // Update button icon
+    updateThemeIcon(currentTheme);
+    
+    // Toggle theme function
+    function toggleTheme() {
+        if (currentTheme === 'light') {
+            currentTheme = 'dark';
+        } else {
+            currentTheme = 'light';
+        }
+        
+        // Apply new theme
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        
+        // Save to localStorage
+        localStorage.setItem('theme', currentTheme);
+        
+        // Update button icon
+        updateThemeIcon(currentTheme);
+        
+        // Show feedback
+        showNotification(`${currentTheme === 'dark' ? 'Dark' : 'Light'} mode enabled`, 'info');
+    }
+    
+    function updateThemeIcon(theme) {
+        const lightIcon = themeToggle.querySelector('.light-icon');
+        const darkIcon = themeToggle.querySelector('.dark-icon');
+        
+        if (theme === 'dark') {
+            lightIcon.style.display = 'none';
+            darkIcon.style.display = 'block';
+        } else {
+            lightIcon.style.display = 'block';
+            darkIcon.style.display = 'none';
+        }
+    }
+    
+    // Event listener for theme toggle button
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Listen for system theme changes
+    prefersDarkScheme.addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+    });
+}
+
+// ========== STUDY RESOURCES CAROUSEL ==========
+function initStudyResources() {
+    try {
+        const tipsCarousel = document.querySelector('.tips-carousel');
+        const tips = document.querySelectorAll('.tip');
+        const dots = document.querySelectorAll('.dot');
+        const prevBtn = document.querySelector('.tip-prev');
+        const nextBtn = document.querySelector('.tip-next');
+        
+        if (!tipsCarousel || tips.length === 0) {
+            console.log('Study resources elements not found');
+            return;
+        }
+        
+        let currentTip = 0;
+        const totalTips = tips.length;
+        
+        function showTip(index) {
+            // Hide all tips
+            tips.forEach(tip => tip.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+            
+            // Show current tip
+            tips[index].classList.add('active');
+            dots[index].classList.add('active');
+            currentTip = index;
+        }
+        
+        function nextTip() {
+            currentTip = (currentTip + 1) % totalTips;
+            showTip(currentTip);
+        }
+        
+        function prevTip() {
+            currentTip = (currentTip - 1 + totalTips) % totalTips;
+            showTip(currentTip);
+        }
+        
+        // Initialize first tip
+        showTip(0);
+        
+        // Event listeners
+        if (prevBtn) prevBtn.addEventListener('click', prevTip);
+        if (nextBtn) nextBtn.addEventListener('click', nextTip);
+        
+        // Auto-advance tips every 5 seconds
+        const intervalId = setInterval(nextTip, 5000);
+        
+        // Dot click events
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => showTip(index));
+        });
+        
+        console.log('✅ Study resources initialized');
+        
+    } catch (error) {
+        console.error('Error initializing study resources:', error);
+    }
+}

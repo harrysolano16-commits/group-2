@@ -40,6 +40,11 @@
             <button class="btn-primary" id="signupBtn">Sign Up</button>
           </div>
       
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+            <span class="light-icon">🌞</span>
+            <span class="dark-icon">🌙</span>
+          </button>
+
       <!-- Existing Icons -->
           <button class="nav-icon" id="notificationsBtn" aria-label="Notifications">🔔</button>
           <button class="nav-icon" id="profileBtn" aria-label="Profile">👤</button>
@@ -198,6 +203,66 @@
           </div>
         </article>
       </div>
+
+      <div class="study-resources-dashboard">
+          <div class="section-header">
+            <h2>Study Resources & Tips</h2>
+            <p>Helpful tools and techniques to improve your study sessions</p>
+          </div>
+          
+          <div class="resources-container">
+            <!-- Study Techniques -->
+            <div class="card">
+              <h3>🧠 Effective Study Techniques</h3>
+              <div class="techniques-grid">
+                <div class="technique-card">
+                  <div class="technique-icon">🎯</div>
+                  <h4>Pomodoro Technique</h4>
+                  <p>25 min focus + 5 min break cycles</p>
+                  <button class="btn-secondary pomodoro-tip-btn">Try Now</button>
+                </div>
+                <div class="technique-card">
+                  <div class="technique-icon">📝</div>
+                  <h4>Active Recall</h4>
+                  <p>Test yourself instead of re-reading</p>
+                  <button class="btn-secondary recall-tip-btn">Learn More</button>
+                </div>
+                <div class="technique-card">
+                  <div class="technique-icon">🔗</div>
+                  <h4>Spaced Repetition</h4>
+                  <p>Review material at increasing intervals</p>
+                  <button class="btn-secondary spaced-tip-btn">Schedule</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quick Study Tips -->
+            <div class="study-tips card">
+              <h3>💡 Quick Study Tips</h3>
+              <div class="tips-carousel">
+                <div class="tip active">
+                  <p>"Start with the hardest task when your energy is highest."</p>
+                </div>
+                <div class="tip">
+                  <p>"Use the Feynman Technique: Teach concepts to someone else."</p>
+                </div>
+                <div class="tip">
+                  <p>"Take regular breaks to maintain focus and prevent burnout."</p>
+                </div>
+              </div>
+              <div class="tips-controls">
+                <button class="tip-prev">←</button>
+                <div class="tip-dots">
+                  <span class="dot active"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                </div>
+                <button class="tip-next">→</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
     </section>
 
     <!-- To-Do List Section -->
@@ -325,7 +390,7 @@
           <button class="btn-secondary" id="resetBtn">Reset</button>
         </div>
 
-        <div class="saved-images-section" style="margin-top: 30px; display: none;" id="savedImagesSection">
+        <div class="saved-images-section" id="savedImagesSection">
           <h3>Your Saved Images</h3>
           <div class="saved-images-grid" id="savedImagesGrid">
         <!-- Saved images will appear here -->
@@ -396,7 +461,7 @@
           </div>
         </div>
 
-        <div class="converter-result" id="convertedDocumentResult" style="min-height: 100px; display: flex; align-items: center; justify-content: center; text-align: center; margin-top: 20px; padding: 20px; background: rgba(255,255,255,0.03); border-radius: var(--border-radius);">
+        <div class="converter-result" id="convertedDocumentResult">
             <p>Result will appear here</p>
         </div>
 
@@ -560,7 +625,7 @@
             </div>
           </div>
           <div class="manual-flashcards-grid" id="manualFlashcardsGrid">
-            <!-- Manual flashcards will be displayed here -->
+              <!-- Manual flashcards will be displayed here -->
           </div>
         </div>
       </div>
@@ -592,7 +657,7 @@
         </div>
 
         <!-- Word Display -->
-        <div class="dictionary-results card" id="dictionaryResults" style="display: none;">
+        <div class="dictionary-results card" id="dictionaryResults">
           <div class="word-header">
             <div class="word-title">
               <h2 id="wordTitle">Word</h2>
@@ -763,5 +828,9 @@
   </div>
 
 <div class="study-mode" style="display: none;"></div>
+
+<!-- Mobile Overlays - ADD THESE -->
+<div class="sidebar-overlay"></div>
+<div class="search-backdrop"></div>
 </body>
 </html>
